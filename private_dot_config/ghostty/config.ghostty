@@ -1,0 +1,28 @@
+# General
+theme = "TokyoNight Moon"
+font-thicken = true
+font-family = "Maple Mono"
+font-thicken = true
+
+# Window
+window-padding-x = 10
+window-padding-y = 10
+window-padding-balance = true
+window-save-state = always
+mouse-hide-while-typing = true
+
+# Cursor
+cursor-opacity = 1
+cursor-style-blink = true
+
+# Quick terminal ('Quake'-like)
+keybind = global:F1=toggle_quick_terminal
+quick-terminal-position = top
+quick-terminal-size = 70%,90%
+quick-terminal-animation-duration = 0.250
+
+# Keybinds
+keybind = alt+up=goto_split:up
+keybind = alt+down=goto_split:down
+keybind = alt+left=goto_split:left
+keybind = alt+right=goto_split:right

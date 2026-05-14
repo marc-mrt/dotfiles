@@ -1,0 +1,18 @@
+# Path
+export PATH="/home/$USER/.local/bin:$PATH"
+export ZDOTDIR="$HOME/.zsh"
+
+# gpg key
+export GPG_TTY=$TTY
+
+export EDITOR="nvim"
+
+# alias
+alias ls='ls --color=auto'
+alias l="ls -la"
+
+# Mise
+eval "$(mise activate zsh)"
+
+# Starship
+eval "$(starship init zsh)"
