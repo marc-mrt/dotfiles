@@ -1,5 +1,6 @@
 # Path
 export PATH="/home/$USER/.local/bin:$PATH"
+export PATH="/home/marc/.bun/bin:$PATH"
 export ZDOTDIR="$HOME/.zsh"
 
 # gpg key
