@@ -2,7 +2,6 @@
 theme = "TokyoNight Moon"
 font-thicken = true
 font-family = "Maple Mono"
-font-thicken = true
 
 # Window
 window-padding-x = 10
