@@ -1,0 +1,95 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "agent_servers": {
+    "mistral-vibe": {
+      "default_config_options": {
+        "mode": "accept-edits",
+      },
+      "type": "registry",
+    },
+    "claude-acp": {
+      "default_config_options": {
+        "mode": "acceptEdits",
+        "model": "default",
+      },
+      "type": "registry",
+    },
+  },
+  "tabs": {
+    "show_diagnostics": "all",
+  },
+  "icon_theme": "Catppuccin Latte",
+  "edit_predictions": {
+    "provider": "zed",
+    "disabled_globs": [".env"],
+  },
+  "diagnostics_max_severity": "all",
+  "buffer_font_family": "Maple Mono",
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 500,
+    },
+  },
+  "diagnostics": {
+    "inline": {
+      "enabled": true,
+    },
+  },
+  "agent": {
+    "show_turn_stats": true,
+    "favorite_models": [
+      {
+        "provider": "copilot_chat",
+        "model": "claude-sonnet-4.6",
+      },
+    ],
+    "default_profile": "write",
+    "play_sound_when_agent_done": "when_hidden",
+    "default_model": {
+      "effort": "high",
+      "enable_thinking": true,
+      "provider": "copilot_chat",
+      "model": "claude-sonnet-4.6",
+    },
+    "thread_summary_model": {
+      "provider": "copilot_chat",
+      "model": "gpt-5-mini",
+    },
+    "commit_message_model": {
+      "provider": "copilot_chat",
+      "model": "gpt-5-mini",
+    },
+  },
+  "git_panel": {
+    "tree_view": true,
+    "sort_by_path": true,
+  },
+  "minimap": {
+    "show": "always",
+  },
+  "inlay_hints": {
+    "enabled": true,
+  },
+  "base_keymap": "JetBrains",
+  "ui_font_size": 16,
+  "buffer_font_size": 14.0,
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "One Dark",
+  },
+  "lsp": {
+    "biome": {
+      "settings": {
+        "require_config_file": true,
+      },
+    },
+  },
+}
