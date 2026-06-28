@@ -1,5 +1,6 @@
 README.md
 
+# Znap modules
 .config/zsh/znap/**
 
 # Mutagen generated files
@@ -8,3 +9,4 @@ README.md
 .config/waybar/colors.css
 .config/dunst/dunstrc
 .config/dunst/dunstrc-colors
+.config/ghostty/colors-active

@@ -12,7 +12,8 @@ DUNST_OUT="$HOME/.config/dunst/dunstrc"
 hyprctl hyprpaper wallpaper ",$WALLPAPER"
 
 # 2. Run matugen — fills all templates
-matugen image "$WALLPAPER"
+MATUGEN_TYPE="${2:-dark}"   # default dark
+matugen image "$WALLPAPER" --type "$MATUGEN_TYPE"
 
 # 3. Build dunstrc = base + generated colors (no #include support)
 cat "$DUNST_BASE" "$HOME/.config/dunst/dunstrc-colors" > "$DUNST_OUT"

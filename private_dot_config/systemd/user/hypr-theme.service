@@ -1,0 +1,6 @@
+[Unit]
+Description=Hypr day/night theme switcher
+
+[Service]
+Type=oneshot
+ExecStart=%h/.config/hypr/scripts/theme-schedule.sh

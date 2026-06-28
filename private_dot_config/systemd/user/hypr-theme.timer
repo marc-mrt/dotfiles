@@ -1,0 +1,12 @@
+[Unit]
+Description=Hypr day/night theme — run hourly and on login
+
+[Timer]
+OnBootSec=30sec
+OnCalendar=*-*-* 08:00:00
+OnCalendar=*-*-* 21:00:00
+AccuracySec=1min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
