@@ -1,0 +1,32 @@
+[config]
+reload_apps = false
+
+[config.wallpaper]
+set     = false
+command = "true"   # no-op — hyprpaper sets the wallpaper via generate-theme.sh
+
+# ── Templates ────────────────────────────────────────────────────
+
+[templates.hypr-colors]
+input_path  = "~/.config/matugen/templates/hypr-colors.lua"
+output_path = "~/.config/hypr/colors.lua"
+
+[templates.waybar-colors]
+input_path  = "~/.config/matugen/templates/waybar-colors.css"
+output_path = "~/.config/waybar/colors.css"
+
+[templates.dunst-colors]
+input_path  = "~/.config/matugen/templates/dunstrc-colors"
+output_path = "~/.config/dunst/dunstrc-colors"
+
+[templates.ghostty-colors]
+input_path  = "~/.config/matugen/templates/ghostty-colors.ini"
+output_path = "~/.config/ghostty/colors"
+
+[templates.nvim-palette]
+input_path  = "~/.config/matugen/templates/nvim-palette.lua"
+output_path = "~/.config/nvim/lua/palette.lua"
+
+[templates.hyprlock-colors]
+input_path  = "~/.config/matugen/templates/hyprlock-colors.conf"
+output_path = "~/.config/hypr/hyprlock-colors.conf"

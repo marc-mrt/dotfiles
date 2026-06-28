@@ -7,6 +7,9 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "terminal": {
+    "shell": { "program": "ghostty" },
+  },
   "agent_servers": {
     "mistral-vibe": {
       "default_config_options": {
@@ -16,7 +19,7 @@
     },
     "claude-acp": {
       "default_config_options": {
-        "mode": "acceptEdits",
+        "mode": "auto",
         "model": "default",
       },
       "type": "registry",
@@ -79,11 +82,11 @@
   },
   "base_keymap": "JetBrains",
   "ui_font_size": 16,
-  "buffer_font_size": 14.0,
+  "buffer_font_size": 13.0,
   "theme": {
     "mode": "system",
-    "light": "One Light",
-    "dark": "One Dark",
+    "light": "Catppuccin Latte",
+    "dark": "Catppuccin Mocha",
   },
   "lsp": {
     "biome": {

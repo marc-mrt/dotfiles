@@ -1,0 +1,3 @@
+[template]
+input_path  = "~/.config/matugen/templates/dunstrc-colors"
+output_path = "~/.config/dunst/dunstrc-colors"

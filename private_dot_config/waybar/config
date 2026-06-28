@@ -1,0 +1,31 @@
+{
+  "layer": "top",
+  "output": ["*"],
+  "position": "top",
+  "mode": "dock",
+  "exclusive": true,
+  "passthrough": false,
+  "reload_style_on_change": true,
+  "include": [
+    "~/.config/waybar/modules/*json*"
+  ],
+
+  "modules-left": ["group/leaf-inverse"],
+  "modules-center": ["group/pill#center"],
+  "modules-right": ["group/leaf"],
+
+  "group/leaf-inverse": {
+    "orientation": "inherit",
+    "modules": ["hyprland/workspaces"]
+  },
+
+  "group/pill#center": {
+    "orientation": "inherit",
+    "modules": ["clock", "custom/updates"]
+  },
+
+  "group/leaf": {
+    "orientation": "inherit",
+    "modules": ["network", "pulseaudio", "tray", "custom/dunst"]
+  }
+}

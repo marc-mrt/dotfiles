@@ -1,0 +1,8 @@
+{
+    "network": {
+        "format-wifi": "󰤨  {signalStrength}%",
+        "format-ethernet": "󰈀  {ifname}",
+        "format-disconnected": "󰤭  Offline",
+        "tooltip-format": "{ifname}: {ipaddr}\n{essid} ({signalStrength}%)\n↑ {bandwidthUpBytes} ↓ {bandwidthDownBytes}"
+    }
+}

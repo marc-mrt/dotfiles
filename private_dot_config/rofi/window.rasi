@@ -1,0 +1,60 @@
+@import "theme.rasi"
+
+* {
+    background-color: transparent;
+    text-color:       @main-fg;
+}
+
+window {
+    width:              560px;
+    background-color:   @main-bg;
+    border:             2px;
+    border-color:       @main-br;
+    border-radius:      16px;
+}
+
+mainbox {
+    padding:    12px;
+    spacing:    8px;
+    children:   [ inputbar, listview ];
+}
+
+inputbar {
+    background-color: #313244ff;
+    border-radius:    10px;
+    padding:          10px 14px;
+    children:         [ prompt, entry ];
+    spacing:          10px;
+}
+
+prompt {
+    text-color: @main-ex;
+}
+
+entry {
+    text-color:        @main-fg;
+    placeholder:       "Switch window...";
+    placeholder-color: #6c7086ff;
+}
+
+listview {
+    columns:    1;
+    lines:      6;
+    scrollbar:  false;
+    spacing:    4px;
+}
+
+element {
+    padding:      8px 12px;
+    border-radius: 8px;
+    spacing:      10px;
+    children:     [ element-icon, element-text ];
+}
+
+element.selected.normal {
+    background-color: @select-bg;
+    text-color:       @select-fg;
+}
+
+element-icon { size: 22px; }
+element-text { text-color: inherit; }

@@ -1,0 +1,11 @@
+configuration {
+    modi:               "drun,run,window";
+    show-icons:         true;
+    icon-theme:         "Papirus-Dark";
+    font:               "Maple Mono NF 12";
+    terminal:           "ghostty";
+    drun-display-format: "{name}";
+    hover-select:       true;
+    me-select-entry:    "";
+    me-accept-entry:    "MousePrimary";
+}

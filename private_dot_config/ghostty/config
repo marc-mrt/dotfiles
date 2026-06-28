@@ -1,0 +1,25 @@
+# Font 
+font-thicken = true
+font-family = Maple Mono NF
+
+# Window
+window-padding-x = 12
+window-padding-y = 8
+background-opacity = 0.92
+background-blur-radius = 20
+window-save-state = always
+mouse-hide-while-typing = true
+window-decoration = false
+
+# Cursor
+cursor-opacity = 1
+cursor-style-blink = true
+
+# Keybinds
+keybind = alt+up=goto_split:up
+keybind = alt+down=goto_split:down
+keybind = alt+left=goto_split:left
+keybind = alt+right=goto_split:right
+
+# Mutagen theme
+config-file = /home/marc/.config/ghostty/colors

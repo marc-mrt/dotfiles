@@ -1,3 +1,10 @@
 README.md
 
 .config/zsh/znap/**
+
+# Mutagen generated files
+.config/hypr/colors.lua
+.config/hypr/hyprlock-colors.conf
+.config/waybar/colors.css
+.config/dunst/dunstrc
+.config/dunst/dunstrc-colors
