@@ -37,5 +37,6 @@ export GPG_TTY=$TTY
 
 # editor
 export PAGER=less
+export LESS="-R"
 export EDITOR=nvim
 export VISUAL="flatpak run dev.zed.Zed -n"
