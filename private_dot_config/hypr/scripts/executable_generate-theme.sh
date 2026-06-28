@@ -9,6 +9,8 @@ DUNST_BASE="$HOME/.config/dunst/dunstrc.base"
 DUNST_OUT="$HOME/.config/dunst/dunstrc"
 
 # 1. Set wallpaper via hyprctl
+hyprctl hyprpaper unload all
+hyprctl hyprpaper preload "$WALLPAPER"
 hyprctl hyprpaper wallpaper ",$WALLPAPER"
 
 # Sync hyprlock background path only
