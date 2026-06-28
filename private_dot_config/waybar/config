@@ -6,26 +6,128 @@
   "exclusive": true,
   "passthrough": false,
   "reload_style_on_change": true,
-  "include": [
-    "~/.config/waybar/modules/*json*"
-  ],
 
   "modules-left": ["group/leaf-inverse"],
   "modules-center": ["group/pill#center"],
   "modules-right": ["group/leaf"],
 
+  // ── Left island: workspaces + window title ───────────
   "group/leaf-inverse": {
     "orientation": "inherit",
-    "modules": ["hyprland/workspaces"]
+    "modules": ["hyprland/workspaces", "hyprland/window"]
   },
 
+  // ── Center island: clock ─────────────────────────────
   "group/pill#center": {
     "orientation": "inherit",
     "modules": ["clock", "custom/updates"]
   },
 
+  // ── Right island: status ─────────────────────────────
   "group/leaf": {
     "orientation": "inherit",
-    "modules": ["network", "pulseaudio", "tray", "custom/dunst"]
+    "modules": [
+      "network",
+      "wireplumber",
+      "backlight",
+      "tray",
+      "custom/dunst"
+    ]
+  },
+
+    // ── Window title ─────────────────────────────────────
+  "hyprland/window": {
+    "format": "{}",
+    "max-length": 40,
+    "rewrite": {
+      "(.*) — Zen Browser":     "󰈹 $1",
+      "(.*) - fish":            " $1",
+      "(.*) - zsh":             " $1",
+      "(.*)":                   "$1"
+    },
+    "separate-outputs": true
+  },
+
+  // ── Workspaces ───────────────────────────────────────
+  "hyprland/workspaces": {
+    "format": "{icon}",
+    "format-icons": {
+      "active":    "●",
+      "default":   "○",
+      "urgent":    "◉"
+    },
+    "persistent-workspaces": {
+      "*": [1, 2, 3, 4, 5]
+    },
+    "on-click": "activate",
+    "sort-by": "id"
+  },
+
+  // ── Clock ────────────────────────────────────────────
+  "clock": {
+    "format": " {:%H:%M}",
+    "format-alt": " {:%a, %d %b %Y}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "year",
+      "mode-mon-col": 3,
+      "on-scroll": 1
+    }
+  },
+
+  // ── Network ──────────────────────────────────────────
+  "network": {
+    "format-wifi":       " {essid}",
+    "format-ethernet":   "󰈀 {ifname}",
+    "format-disconnected": "󰖪 Off",
+    "tooltip-format-wifi": "{essid}\n{signalStrength}% · {frequency} MHz\n󰇖 {bandwidthUpBits}  󰇙 {bandwidthDownBits}",
+    "tooltip-format-ethernet": "󰈀 {ifname}\n{ipaddr}",
+    "on-click": "nm-connection-editor"
+  },
+
+  // ── Audio (WirePlumber/PipeWire) ─────────────────────
+  "wireplumber": {
+    "format":        " {volume}%",
+    "format-muted":  "󰖁 muted",
+    "on-click":      "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+    "on-scroll-up":  "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+",
+    "on-scroll-down":"wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-",
+    "max-volume": 150,
+    "tooltip": true
+  },
+
+    // ── Brightness via ddcutil ───────────────────────────
+  "custom/brightness": {
+    "exec": "bash -c 'v=$(ddcutil getvcp 10 2>/dev/null | grep -oP \"current value =\\s*\\K[0-9]+\"); echo \"{\\\"percentage\\\": ${v:-0}, \\\"tooltip\\\": \\\"Brightness: ${v:-0}%\\\"}\"'",
+    "return-type": "json",
+    "format": "{icon} {percentage}%",
+    "format-icons": ["󰃞", "󰃟", "󰃠"],
+    "on-scroll-up":  "ddcutil setvcp 10 + 5",
+    "on-scroll-down":"ddcutil setvcp 10 - 5",
+    "on-click":      "ddcutil setvcp 10 50",
+    "interval": 10,
+    "tooltip": true
+  },
+
+  // ── Tray ─────────────────────────────────────────────
+  "tray": {
+    "spacing": 8,
+    "icon-size": 16
+  },
+
+  // ── Dunst toggle ─────────────────────────────────────
+  "custom/dunst": {
+    "exec": "~/.config/hypr/scripts/dunst-status.sh",
+    "on-click": "~/.config/hypr/scripts/dunst-toggle.sh",
+    "interval": 5,
+    "tooltip": false
+  },
+
+  // ── Updates ──────────────────────────────────────────
+  "custom/updates": {
+    "exec": "~/.config/hypr/scripts/updates.sh",
+    "interval": 3600,
+    "format": "{}",
+    "tooltip": false
   }
 }

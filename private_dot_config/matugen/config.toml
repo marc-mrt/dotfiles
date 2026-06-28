@@ -12,8 +12,9 @@ input_path  = "~/.config/matugen/templates/hypr-colors.lua"
 output_path = "~/.config/hypr/colors.lua"
 
 [templates.waybar-colors]
-input_path  = "~/.config/matugen/templates/waybar-colors.css"
-output_path = "~/.config/waybar/colors.css"
+input_path  = '~/.config/matugen/templates/waybar-colors.css'
+output_path = '~/.config/waybar/colors.css'
+post_hook   = 'pkill -SIGUSR2 waybar'
 
 [templates.dunst-colors]
 input_path  = "~/.config/matugen/templates/dunstrc-colors"
