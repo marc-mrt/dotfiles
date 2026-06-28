@@ -4,7 +4,19 @@ GENERATE="$HOME/.config/hypr/scripts/generate-theme.sh"
 DAY_WALL="$HOME/.local/share/wallpapers/day.jpg"
 NIGHT_WALL="$HOME/.local/share/wallpapers/night.jpg"
 ZEN_PROFILE="$HOME/.var/app/app.zen_browser.zen/.zen/mfmbi5o6.Default (release)"
-ZED_SETTINGS="$HOME/.var/app/dev.zed.Zed/config/zed/settings.json"
+
+# ── nvim remote theme switch ──────────────────────────────
+nvim_apply_theme() {
+    local colorscheme="$1"
+    local background="$2"
+    # nvim 0.10+ auto-creates socket at XDG_RUNTIME_DIR/nvim.PID.0
+    for socket in /run/user/$(id -u)/nvim.*.0; do
+        [[ -S "$socket" ]] || continue
+        nvim --server "$socket" --remote-send \
+            "<Esc>:set background=${background}<CR>:colorscheme ${colorscheme}<CR>" \
+            2>/dev/null || true
+    done
+}
 
 HOUR=$(date +%H)
 
@@ -14,18 +26,20 @@ if [[ "$HOUR" -ge 8 && "$HOUR" -lt 21 ]]; then
     MATUGEN_TYPE="light"
     GTK_THEME="catppuccin-latte-standard-mauve-light"
     GTK_SCHEME="prefer-light"
-    ZED_THEME="Catppuccin Latte"
     GHOSTTY_COLORS="$HOME/.config/ghostty/colors-light"
-    ZEN_JS="$HOME/.zen/user-day.js"
+    ZEN_JS="$ZEN_PROFILE/user-day.js"
+    NVIM_SCHEME="catppuccin-latte"
+    NVIM_BG="light"
 else
     MODE="night"
     WALLPAPER="$NIGHT_WALL"
     MATUGEN_TYPE="dark"
     GTK_THEME="catppuccin-mocha-standard-mauve-dark"
     GTK_SCHEME="prefer-dark"
-    ZED_THEME="Catppuccin Mocha"
     GHOSTTY_COLORS="$HOME/.config/ghostty/colors-dark"
-    ZEN_JS="$HOME/.zen/user-night.js"
+    ZEN_JS="$ZEN_PROFILE/user-night.js"
+    NVIM_SCHEME="catppuccin-mocha"
+    NVIM_BG="dark"
 fi
 
 # Skip if already in this mode
@@ -43,13 +57,10 @@ ln -sf "$GHOSTTY_COLORS" "$HOME/.config/ghostty/colors-active"
 gsettings set org.gnome.desktop.interface color-scheme "$GTK_SCHEME"
 gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME"
 
-# 4. Zed — patch theme in settings.json
-if command -v jq &>/dev/null; then
-    tmp=$(mktemp)
-    jq --arg t "$ZED_THEME" '.theme = $t' "$ZED_SETTINGS" > "$tmp" && mv "$tmp" "$ZED_SETTINGS"
-fi
-
-# 5. Zen Browser
+# 4. Zen Browser
 [[ -n "$ZEN_PROFILE" ]] && cp "$ZEN_JS" "$ZEN_PROFILE/user.js"
+
+# 5. Neovim — update all running instances
+nvim_apply_theme "$NVIM_SCHEME" "$NVIM_BG"
 
 notify-send "Theme" "Switched to $MODE mode" -i preferences-desktop-wallpaper
