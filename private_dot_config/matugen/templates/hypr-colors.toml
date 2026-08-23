@@ -1,3 +1,0 @@
-[template]
-input_path  = "~/.config/matugen/templates/hypr-colors.lua"
-output_path = "~/.config/hypr/colors.lua"

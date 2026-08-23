@@ -1,0 +1,15 @@
+local o = vim.opt
+o.termguicolors  = true
+o.number         = true
+o.relativenumber = true
+o.signcolumn     = "yes"
+o.cursorline     = true
+o.scrolloff      = 8
+o.tabstop        = 4
+o.shiftwidth     = 4
+o.expandtab      = true
+o.wrap           = false
+o.splitright     = true
+o.splitbelow     = true
+o.updatetime     = 250
+o.completeopt    = { "menuone", "noselect" }

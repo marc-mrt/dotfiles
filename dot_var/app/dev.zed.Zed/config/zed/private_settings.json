@@ -7,6 +7,7 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "ui_font_family": ".ZedSans",
   "terminal": {
     "shell": { "program": "ghostty" },
   },
@@ -19,6 +20,7 @@
     },
     "claude-acp": {
       "default_config_options": {
+        "effort": "default",
         "mode": "auto",
         "model": "default",
       },
@@ -81,12 +83,12 @@
     "enabled": true,
   },
   "base_keymap": "JetBrains",
-  "ui_font_size": 16,
-  "buffer_font_size": 13.0,
+  "ui_font_size": 18.0,
+  "buffer_font_size": 15.0,
   "theme": {
     "mode": "system",
     "light": "Catppuccin Latte",
-    "dark": "Catppuccin Mocha",
+    "dark": "Carbonfox - blurred",
   },
   "lsp": {
     "biome": {

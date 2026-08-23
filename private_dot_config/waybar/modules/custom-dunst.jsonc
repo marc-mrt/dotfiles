@@ -1,8 +1,0 @@
-{
-    "custom/dunst": {
-        "exec": "dunstctl count waiting",
-        "interval": 2,
-        "format": "󰂚  {}",
-        "on-click": "dunstctl set-paused toggle"
-    }
-}

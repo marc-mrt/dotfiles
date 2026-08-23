@@ -17,3 +17,10 @@ hl.animation({ leaf = "border",      enabled = true, speed = 1,  bezier = "liner
 hl.animation({ leaf = "borderangle", enabled = true, speed = 30, bezier = "liner",  style = "once" })
 hl.animation({ leaf = "fade",        enabled = true, speed = 10, bezier = "default" })
 hl.animation({ leaf = "workspaces",  enabled = true, speed = 5,  bezier = "wind" })
+
+-- Quickshell's pad + notification stack are wlr-layer-shell surfaces
+-- (PanelWindow), so their show/hide animates via this "layers" category,
+-- not "windows" — without an explicit override they were falling back to
+-- the slower default fade above. speed = 2 -> 200ms.
+hl.animation({ leaf = "layersIn",  enabled = true, speed = 2, bezier = "default" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 2, bezier = "default" })

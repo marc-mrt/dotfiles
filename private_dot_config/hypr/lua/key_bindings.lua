@@ -20,20 +20,24 @@ hl.bind(mainMod .. " + B", hl.dsp.exec_cmd(browser))
 hl.bind(mainMod .. " + T", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 
+-- Quickshell
+hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("qs ipc call pad toggleOverview"))
+hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd("qs ipc call pad toggleWindows"))
+
 -- App launcher
-hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("rofi -show drun -theme ~/.config/rofi/launcher.rasi"))
+-- hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("rofi -show drun -theme ~/.config/rofi/launcher.rasi"))
 
 -- Window switcher
-hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd("rofi -show window -theme ~/.config/rofi/window.rasi"))
+-- hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd("rofi -show window -theme ~/.config/rofi/window.rasi"))
 
 -- Run prompt
-hl.bind(mainMod .. " + SHIFT + Space", hl.dsp.exec_cmd("rofi -show run -theme ~/.config/rofi/launcher.rasi"))
+-- hl.bind(mainMod .. " + SHIFT + Space", hl.dsp.exec_cmd("rofi -show run -theme ~/.config/rofi/launcher.rasi"))
 
 -- Walpaper switcher
-hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd(
-    "rofi -show filebrowser -theme ~/.config/rofi/launcher.rasi" ..
-    " | xargs -I{} ~/.config/hyde-personal/scripts/generate-theme.sh {}"
-))
+-- hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd(
+--     "rofi -show filebrowser -theme ~/.config/rofi/launcher.rasi" ..
+--     " | xargs -I{} ~/.config/hypr/scripts/apply-theme.sh {}"
+-- ))
 
 -- Window management
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
@@ -59,14 +63,14 @@ end
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
--- Reload Waybar
-hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("killall -SIGUSR2 waybar"))
- 
 -- Reload wallpaper
 hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("hyprctl hyprpaper reload"))
  
 -- Lock screen
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
+
+-- Toggle Quickshell bar (auto-hidden by default for OLED care)
+-- hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("qs ipc call bar toggle"))
  
 -- Volume (pipewire / wireplumber)
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
