@@ -32,6 +32,7 @@ Item {
     // focusing us — without it the pad would see its own not-yet-focused
     // state on open and immediately close itself again.
     property bool everActive: false
+
     readonly property bool windowActive: root.Window.active
     onWindowActiveChanged: {
         if (root.windowActive)
@@ -47,13 +48,33 @@ Item {
         target: PadState
         function onShownChanged() {
             if (!PadState.shown) {
+                // Turned off *before* PanelState.close() below, so the
+                // resulting inlineOpen/layout change writes straight to
+                // width/height with no animation in the way — no race to
+                // lose. A hidden window's animation clock never ticks (Qt
+                // suspends it while unexposed), so a Behavior left enabled
+                // here starts a collapse animation that never advances until
+                // the pad is shown again, which is what made it look like it
+                // "folds" open: reopening resumes that stalled animation
+                // from wherever it was frozen instead of showing the settled
+                // size.
+                widthBehavior.enabled = false
+                heightBehavior.enabled = false
                 root.everActive = false
                 PanelState.close()
                 keyCatcher.text = ""
-            } else if (PadState.searchBias === "windows") {
-                // SUPER+Tab: land straight on the search tab, pre-biased to
-                // open windows (see Search.qml's windows-first ordering).
-                PanelState.inlineOpen = "search"
+            } else {
+                // Back on now that the card is settled and about to show
+                // again, so in-session changes (expanding a tab, growing for
+                // search) still animate normally.
+                widthBehavior.enabled = true
+                heightBehavior.enabled = true
+                if (PadState.searchBias === "windows") {
+                    // SUPER+Tab: land straight on the search tab, pre-biased
+                    // to open windows (see Search.qml's windows-first
+                    // ordering).
+                    PanelState.inlineOpen = "search"
+                }
             }
         }
     }
@@ -99,8 +120,12 @@ Item {
         border.width: 2
         border.color: Colors.accent
 
-        Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
-        Behavior on height { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+        // id'd so onShownChanged above can turn these off before closing —
+        // see the comment there for why. Starts disabled to match
+        // PadState.shown's initial false; onShownChanged takes over toggling
+        // it imperatively from the first shown change onward.
+        Behavior on width { id: widthBehavior; enabled: false; NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+        Behavior on height { id: heightBehavior; enabled: false; NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
 
         // Click on empty card space: step back from a drill-down panel to
         // the overview it was opened from (same gesture the old bar used to
