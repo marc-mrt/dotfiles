@@ -21,7 +21,7 @@ hl.config({
         gaps_out       = 8,
         border_size    = 2,
         col = {
-	    active_border   = { colors = { C.primary .. "ff", C.secondary .. "ff" }, angle = 45 },
+            active_border   = { colors = { C.primary .. "ff" }, angle = 45 },
             inactive_border = { colors = { C.surface .. "cc", C.surface .. "66" },   angle = 45 },
         },
         layout           = "dwindle",
