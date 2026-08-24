@@ -1,7 +1,6 @@
 //@ pragma UseQApplication
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
 import "./modules"
@@ -24,99 +23,63 @@ ShellRoot {
         }
     }
 
-    // Pad — single floating card, no multi-monitor handling (deliberate,
-    // this shell only ever targets one screen). Overlay layer, floats
-    // above fullscreen windows and (via OnDemand keyboard focus, see
-    // below) is immediately typable the instant SUPER+SPACE/SUPER+Tab
-    // opens it, even over a focused fullscreen app.
+    // Pad — a real XDG toplevel, NOT a layer surface, and screen-sized.
+    // Both halves of that matter:
     //
-    // Deliberately NOT full-width: a full-screen surface here would sit on
-    // top of notifWin below at that corner (each time the pad opens it
-    // remaps, landing above the already-mapped notification stack) and
-    // swallow clicks meant for it. `PanelWindow.mask` is documented for
-    // exactly this (carve a hole, let clicks fall through to whatever's
-    // behind) but had no effect at all when tried here — so this reserves
-    // real screen space instead (Metrics.notifReserveWidth/Height): this
-    // window stops short of the right margin reserved for notifications,
-    // and padCornerCatcher below covers the top-right the rest of the
-    // way, leaving an actual non-overlapping gap at the bottom-right for
-    // notifWin. Height stays full screen — shrinking height instead of
-    // width clips the card whenever it grows tall (many search results);
-    // the card sits near the top and can extend well past a shortened
-    // window, but is horizontally centered nowhere near the reserved
-    // right column, so trimming width instead doesn't affect it.
+    // Toplevel, because a layer surface can never be "the focused window"
+    // to Hyprland. It focuses one on map and typing lands there, but it
+    // deliberately keeps its last-window pointer aimed at whatever was
+    // focused before, so it knows where to hand focus back when the layer
+    // goes away — and every visual cue reads that pointer, not keyboard
+    // focus. The window underneath kept its active border, stayed undimmed
+    // under dim_inactive, stayed at full inactive_opacity, and
+    // `hyprctl activewindow` kept naming it. None of that is configurable;
+    // it's what a layer surface *is*. As a toplevel, Hyprland focuses this
+    // on map like any other window and all of the above just happens.
     //
-    // Both padWin and padCornerCatcher below are gated purely on
-    // PadState.shown — unlike a merged pad+notifications window (tried
-    // and reverted once: a full-screen surface mapped whenever a
-    // notification existed, not just when the pad was open, silently ate
-    // every click on the rest of the desktop), neither of these can ever
-    // be mapped, let alone full-screen, while the pad is closed.
-    PanelWindow {
+    // Screen-sized, because a floating toplevel cannot resize itself after
+    // it maps — measured: Hyprland keeps the size it configured at map
+    // time and ignores every later implicitWidth/implicitHeight change. A
+    // card-sized window would therefore be frozen at whatever size it
+    // opened with, killing the 576->768 search growth. Sizing the window
+    // to the whole screen sidesteps that completely: the window never
+    // changes size, only the card inside it does, which is plain QML
+    // layout that Hyprland never sees.
+    //
+    // The full-screen input region also does what the old layer overlay
+    // was widened to do: with input:follow_mouse = 1 (hypr/lua/options.lua)
+    // any pixel this doesn't cover is one where drifting the mouse hands
+    // focus to the window underneath, out from under the pad you're still
+    // typing into. Nothing to carve out here — notifWin below is on the
+    // overlay layer, which renders above windows, so it stays visible and
+    // clickable over this without needing a hole.
+    //
+    // Positioning, float/pin and border suppression come from the
+    // `quickshell-pad` rule in hypr/lua/window_rules.lua, matched on this
+    // window's class (org.quickshell).
+    FloatingWindow {
         id: padWin
         screen: Quickshell.screens[0]
         visible: PadState.shown
+        title: "quickshell-pad"
 
-        anchors {
-            top: true
-            bottom: true
-            left: true
-        }
-        implicitWidth: screen.width - Metrics.notifReserveWidth
-        exclusiveZone: 0
+        implicitWidth: padWin.screen.width
+        implicitHeight: padWin.screen.height
         color: "transparent"
-
-        WlrLayershell.layer: WlrLayer.Overlay
-        // OnDemand, not Exclusive: a layer surface holding Exclusive
-        // keyboard focus captures ALL pointer input globally in Hyprland,
-        // regardless of its actual input region/geometry — a confirmed
-        // Hyprland bug (github.com/hyprwm/Hyprland/discussions/14136),
-        // not something fixable from this side. That's what was silently
-        // eating clicks meant for notifWin's separate, non-overlapping
-        // surface even though the padWin/padCornerCatcher geometry split
-        // above was already correct. Confirmed OnDemand still focuses for
-        // typing the instant SUPER+SPACE opens the pad — no regression.
-        WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
         Pad {
             anchors.fill: parent
         }
     }
 
-    // Top-right leg of the same "click outside closes the pad" catcher —
-    // see padWin above. Together they cover the whole screen except the
-    // bottom-right corner reserved for notifWin.
-    PanelWindow {
-        id: padCornerCatcher
-        screen: Quickshell.screens[0]
-        visible: PadState.shown
-
-        anchors {
-            top: true
-            right: true
-        }
-        implicitWidth: Metrics.notifReserveWidth
-        implicitHeight: screen.height - Metrics.notifReserveHeight
-        exclusiveZone: 0
-        focusable: false
-        color: "transparent"
-
-        WlrLayershell.layer: WlrLayer.Overlay
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: PadState.close()
-        }
-    }
-
     // Notification stack — independent of the pad, same split as the OSD
     // below: fires regardless of whether the pad is open, so a notification
-    // during a fullscreen video is still seen. Overlay layer for the same
-    // reason; unfocusable so it never steals keyboard input. Bottom-right
-    // corner, sized to content (not full-width), which matters even more
-    // now: an oversized surface here would block clicks to the desktop
-    // underneath across its whole bounds, not just where content actually
-    // renders (see padWin's comment above for how that bit us).
+    // during a fullscreen video is still seen. Overlay layer, which puts it
+    // above ordinary windows and therefore above padWin too — that's what
+    // lets it keep working unchanged while the pad covers the screen.
+    // Unfocusable, so clicking a card can't take focus off the pad.
+    // Bottom-right, sized to content (not full-width), so it blocks clicks
+    // to the desktop underneath only where content actually renders.
     PanelWindow {
         id: notifWin
         screen: Quickshell.screens[0]
@@ -141,35 +104,9 @@ ShellRoot {
         }
     }
 
-    // Hyprland-side focus for the pad. WlrKeyboardFocus only tells the
-    // compositor that this layer accepts keys — Hyprland still counts the
-    // last real window as the focused one, so opening the pad left the
-    // window underneath fully active (its border, its idea of "the current
-    // window") while the pad typed over it. hyprland_focus_grab_v1 is the
-    // protocol built for exactly this: while the grab holds, Hyprland
-    // treats the grabbed surfaces as what's focused, and the window
-    // underneath drops to its inactive treatment.
-    //
-    // notifWin joins the grab, but only while it's actually mapped — NOT
-    // to focus it (it stays focusable: false, never takes keyboard focus,
-    // and no longer wears the focused-card border either, see
-    // modules/NotificationStack.qml) but so a click on a notification
-    // reaches the card instead of being eaten as "clicked outside the
-    // grab". That's the same failure mode Exclusive keyboard focus caused
-    // above; naming the surface here is the supported way out of it.
-    //
-    // Deliberately no onCleared -> PadState.close(): padWin and
-    // padCornerCatcher already cover every pixel that isn't notifWin and
-    // close the pad themselves, and the `windows` list below re-commits
-    // whenever the notification stack empties or fills — a cleared handler
-    // would read that ordinary re-grab as "user clicked away" and close
-    // the pad the moment a notification arrived.
-    HyprlandFocusGrab {
-        active: PadState.shown
-        windows: Notifications.groups.length > 0
-            ? [padWin, padCornerCatcher, notifWin]
-            : [padWin, padCornerCatcher]
-    }
+    // No HyprlandFocusGrab here anymore: that protocol exists to give a
+    // layer surface something focus-shaped, and padWin is a real window
+    // now — Hyprland focuses it on map like anything else, with no help.
 
     // OSD — transient toast for volume/brightness changes made outside
     // Quickshell (hardware keys, hypridle, other apps). Non-exclusive,

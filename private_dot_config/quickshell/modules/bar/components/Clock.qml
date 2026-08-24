@@ -3,7 +3,10 @@ import "../../../config"
 import "../../../services"
 import "../widgets" as W
 
-// Bar clock — click opens the calendar drawer panel.
+// Bar clock — click expands the calendar tab. Not instantiated anywhere
+// right now (the pad draws its own big clock, see modules/pad/Overview.qml);
+// kept working against the current PanelState so it isn't quietly broken if
+// a bar ever comes back.
 Item {
     id: root
     implicitWidth: label.implicitWidth + 20
@@ -13,7 +16,7 @@ Item {
         anchors.centerIn: parent
         width: label.implicitWidth + 20
         height: Math.round(root.implicitHeight * 0.74)
-        active: PanelState.open === "calendar"
+        active: PanelState.isInlineOpen("calendar")
         hovered: ma.containsMouse
     }
 
@@ -37,6 +40,6 @@ Item {
         id: ma
         anchors.fill: parent
         hoverEnabled: true
-        onClicked: PanelState.toggle("calendar", root.mapToItem(null, root.width / 2, 0).x)
+        onClicked: PanelState.toggleInline("calendar")
     }
 }

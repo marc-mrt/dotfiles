@@ -16,15 +16,15 @@ ColumnLayout {
 
     readonly property string query: PadState.searchQuery.toLowerCase()
 
-    // inline: true -> embeds in the overview (PanelState.toggleInline, can
-    // have several open at once); false -> the one remaining exclusive
-    // full-card panel (PanelState.toggle).
+    // Every one of these is an inline overview tab now — the calendar was
+    // the last exclusive full-card panel and moved in with the rest — so
+    // there's no per-entry mode flag to carry anymore.
     readonly property var shortcuts: [
-        { name: "Network", target: "network", inline: true },
-        { name: "Bluetooth", target: "bluetooth", inline: true },
-        { name: "Volume", target: "volume", inline: true },
-        { name: "Brightness", target: "brightness", inline: true },
-        { name: "Calendar", target: "calendar", inline: false }
+        { name: "Network", target: "network" },
+        { name: "Bluetooth", target: "bluetooth" },
+        { name: "Volume", target: "volume" },
+        { name: "Brightness", target: "brightness" },
+        { name: "Calendar", target: "calendar" }
     ]
 
     // Icon lookup by window class, same heuristic Workspaces.qml already
@@ -62,7 +62,7 @@ ColumnLayout {
 
     readonly property var shortcutResults: root.shortcuts
         .filter(s => !root.query || s.name.toLowerCase().includes(root.query))
-        .map(s => ({ kind: "panel", name: s.name, iconPath: "", target: s.target, inline: s.inline }))
+        .map(s => ({ kind: "panel", name: s.name, iconPath: "", target: s.target }))
 
     // SUPER+Tab (searchBias === "windows") biases open windows to the top;
     // SUPER+SPACE leads with apps, matching the old drun muscle memory.
@@ -72,6 +72,14 @@ ColumnLayout {
 
     property int selected: 0
     onResultsChanged: selected = 0
+
+    // Where the current selection sits within this list, in this item's own
+    // coordinates. Published so whatever is scrolling us can keep it in
+    // view — the list is clipped now (modules/pad/Overview.qml), and
+    // Up/Down would otherwise happily walk the selection straight off the
+    // bottom of the visible area with nothing appearing to happen.
+    property real selectionY: 0
+    property real selectionHeight: 0
 
     function moveSelection(delta) {
         if (root.results.length === 0)
@@ -95,16 +103,18 @@ ColumnLayout {
             r.entry.execute()
             PadState.close()
         } else if (r.kind === "window") {
-            Hyprland.dispatch("focuswindow address:" + r.toplevel.address)
+            // Was Hyprland.dispatch("focuswindow address:" + address),
+            // which this Hyprland's Lua config parser rejects outright —
+            // so picking a window here closed the pad and left focus
+            // exactly where it was, silently. See the matching comment on
+            // services/Notifications.qml's focusApp() for the details.
+            Hyprland.dispatch('hl.dsp.focus({ window = "address:0x' + r.toplevel.address + '" })')
             PadState.close()
         } else if (r.kind === "panel") {
             // Leaves the query/PadState cleanup to Pad.qml's reactive
             // handler (fires off inlineOpen leaving "search") — no direct
             // call here, same as clicking a widget tile wouldn't need one.
-            if (r.inline)
-                PanelState.toggleInline(r.target)
-            else
-                PanelState.toggle(r.target, 0)
+            PanelState.toggleInline(r.target)
         }
     }
 
@@ -140,11 +150,24 @@ ColumnLayout {
             id: row
             required property var modelData
             required property int index
+            readonly property bool isSelected: row.index === root.selected
             Layout.fillWidth: true
             implicitHeight: 40
             radius: 8
-            color: (row.index === root.selected || rowMa.containsMouse)
+            color: (row.isSelected || rowMa.containsMouse)
                 ? Colors.alpha(Colors.text, 0.08) : "transparent"
+
+            // y is only final once the layout has run, so report on both
+            // "I became the selection" and "I moved".
+            function reportIfSelected() {
+                if (!row.isSelected)
+                    return
+                root.selectionY = row.y
+                root.selectionHeight = row.height
+            }
+            onIsSelectedChanged: row.reportIfSelected()
+            onYChanged: row.reportIfSelected()
+            Component.onCompleted: row.reportIfSelected()
 
             RowLayout {
                 anchors.fill: parent

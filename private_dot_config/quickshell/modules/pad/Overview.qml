@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Hyprland
 import "../../config"
 import "../../services"
@@ -25,6 +26,27 @@ ColumnLayout {
         if (expansionLoader.item && expansionLoader.item.moveSelection)
             expansionLoader.item.moveSelection(delta)
     }
+
+    // Keeps a keyboard-moved selection inside the clipped area. The loaded
+    // item sits at y = 0 in the Flickable's content, so the selection
+    // coordinates it publishes are already content coordinates. Panels that
+    // don't publish any (network, bluetooth, ...) simply never trigger this.
+    function revealSelection() {
+        const item = expansionLoader.item
+        if (!item || item.selectionY === undefined || !expansionFlick.interactive)
+            return
+        const top = item.selectionY
+        const bottom = top + item.selectionHeight
+        if (top < expansionFlick.contentY)
+            expansionFlick.contentY = top
+        else if (bottom > expansionFlick.contentY + expansionFlick.height)
+            expansionFlick.contentY = bottom - expansionFlick.height
+    }
+    Connections {
+        target: expansionLoader.item
+        ignoreUnknownSignals: true
+        function onSelectionYChanged() { root.revealSelection() }
+    }
     function activateSelected() {
         if (expansionLoader.item && expansionLoader.item.activateSelected)
             expansionLoader.item.activateSelected()
@@ -44,38 +66,38 @@ ColumnLayout {
     // Layout: both groups use anchors, which is undefined behavior on a
     // direct Layout child (see the clock block below for the same reason).
     Item {
+        id: topRow
         Layout.fillWidth: true
         implicitHeight: Math.max(statsRow.implicitHeight, widgetsRow.implicitHeight)
 
-        // Display only — no click handlers, no hover states, on purpose.
-        // Ring color escalates with load so a hot metric stands out at a
-        // glance, not just on close reading of the number.
+        // Ring color escalates with load (Colors.loadColor) so a hot metric
+        // stands out at a glance, not just on close reading of the number.
+        // All three open the same system tab — the detail view covers all
+        // three anyway, so sending each ring somewhere different would just
+        // mean picking the right one to click.
         RowLayout {
             id: statsRow
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             spacing: 10
 
-            function colorFor(percent) {
-                return percent >= 85 ? "#f7768e" // red — under real pressure
-                    : percent >= 60 ? "#e0af68" // amber — worth a glance
-                    : Colors.accent
-            }
-
             W.RingMeter {
                 icon: "\u{F2DB}"
                 value: SystemStats.cpuPercent
-                ringColor: statsRow.colorFor(SystemStats.cpuPercent)
+                ringColor: Colors.loadColor(SystemStats.cpuPercent)
+                onClicked: PanelState.toggleInline("system")
             }
             W.RingMeter {
                 icon: "\u{EFC5}" // fa-memory
                 value: SystemStats.ramPercent
-                ringColor: statsRow.colorFor(SystemStats.ramPercent)
+                ringColor: Colors.loadColor(SystemStats.ramPercent)
+                onClicked: PanelState.toggleInline("system")
             }
             W.RingMeter {
                 icon: "\u{EF61}" // fa-sd-card — closest fit, Font Awesome has no dedicated gpu icon
                 value: SystemStats.vramPercent
-                ringColor: statsRow.colorFor(SystemStats.vramPercent)
+                ringColor: Colors.loadColor(SystemStats.vramPercent)
+                onClicked: PanelState.toggleInline("system")
             }
         }
 
@@ -101,10 +123,21 @@ ColumnLayout {
     // Plain Item, not a Layout — the MouseArea below needs anchors.fill,
     // which is undefined behavior on a direct Layout child.
     Item {
+        id: clockRow
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignHCenter
         implicitWidth: clockColumn.implicitWidth
         implicitHeight: clockColumn.implicitHeight
+
+        // Hover pill behind the clock, sized to the text rather than the
+        // full-width row, so the target reads as the clock itself.
+        W.IconPill {
+            anchors.centerIn: clockColumn
+            width: clockColumn.width + 24
+            height: clockColumn.height + 10
+            radius: 12
+            hovered: clockMa.containsMouse
+        }
 
         Column {
             id: clockColumn
@@ -126,41 +159,98 @@ ColumnLayout {
             }
         }
 
+        // Expands the calendar in the same slot as the widget tabs rather
+        // than taking over the card — clicking the clock is just another
+        // way of picking a tab.
         MouseArea {
+            id: clockMa
             anchors.fill: parent
-            onClicked: PanelState.toggle("calendar", 0)
+            hoverEnabled: true
+            onClicked: PanelState.toggleInline("calendar")
         }
     }
 
     // Inline-expanded tab — exclusive (services/PanelState.qml's
     // inlineOpen: a widget name, "search", or ""), so this is always at
     // most one Rectangle tall.
+    //
+    // This is the only row that grows without a natural bound (search can
+    // match far more than fits, and so can a long network/bluetooth list),
+    // so it's where the card's height ceiling is enforced: every other row
+    // here is fixed-size chrome, and the footer below it has to stay on
+    // screen — scrolling the card as a whole would take the footer with
+    // it, which is exactly what we don't want. So the expansion takes what
+    // is left of Metrics.padMaxHeightFraction once the card's own padding,
+    // the other rows, and the gaps between all four are subtracted, and
+    // scrolls its contents inside that.
+    readonly property real expansionMaxHeight: Math.max(0,
+        Quickshell.screens[0].height * Metrics.padMaxHeightFraction
+            - Metrics.padPaddingTop - Metrics.padPadding
+            - topRow.implicitHeight - clockRow.implicitHeight - footerRow.implicitHeight
+            - root.spacing * 3)
+
     Rectangle {
         id: expansion
         readonly property bool open: PanelState.inlineOpen !== ""
+        // What the contents want, before the ceiling is applied.
+        readonly property real naturalHeight:
+            expansionLoader.item ? expansionLoader.item.implicitHeight + 20 : 0
 
         Layout.fillWidth: true
         // Skip entirely (no leftover gap either side) when nothing is
         // expanded — Layouts exclude invisible items from sizing.
         visible: expansion.open
-        implicitHeight: expansionLoader.item ? expansionLoader.item.implicitHeight + 20 : 0
+        implicitHeight: Math.min(expansion.naturalHeight, root.expansionMaxHeight)
         radius: 12
         color: Colors.alpha(Colors.base, 0.45)
         border.width: 1
         border.color: Colors.alpha(Colors.text, 0.06)
 
-        Loader {
-            id: expansionLoader
+        Flickable {
+            id: expansionFlick
             x: 10
             y: 10
             width: parent.width - 20
-            active: expansion.open
-            sourceComponent: PanelState.inlineOpen === "network" ? networkComp
-                : PanelState.inlineOpen === "bluetooth" ? bluetoothComp
-                : PanelState.inlineOpen === "brightness" ? brightnessComp
-                : PanelState.inlineOpen === "volume" ? volumeComp
-                : PanelState.inlineOpen === "search" ? searchComp
-                : null
+            height: parent.height - 20
+            clip: true
+            contentWidth: width
+            contentHeight: expansionLoader.height
+            boundsBehavior: Flickable.StopAtBounds
+            // Nothing to drag when it all fits: leaving this interactive
+            // would let a stray drag rubber-band content that isn't
+            // clipped, for no reason.
+            interactive: expansionFlick.contentHeight > expansionFlick.height
+
+            Loader {
+                id: expansionLoader
+                width: expansionFlick.width
+                // Explicit, not implicit: contentHeight above reads this,
+                // and a Loader left to size itself reports 0 until its item
+                // has settled.
+                height: expansionLoader.item ? expansionLoader.item.implicitHeight : 0
+                active: expansion.open
+                sourceComponent: PanelState.inlineOpen === "network" ? networkComp
+                    : PanelState.inlineOpen === "bluetooth" ? bluetoothComp
+                    : PanelState.inlineOpen === "brightness" ? brightnessComp
+                    : PanelState.inlineOpen === "volume" ? volumeComp
+                    : PanelState.inlineOpen === "search" ? searchComp
+                    : PanelState.inlineOpen === "calendar" ? calendarComp
+                    : PanelState.inlineOpen === "system" ? systemComp
+                    : null
+            }
+        }
+
+        // Thin scroll indicator — without it there's no hint that anything
+        // is cut off. Hand-rolled rather than QtQuick.Controls' ScrollBar
+        // purely so it picks up Colors like everything else here.
+        Rectangle {
+            visible: expansionFlick.interactive
+            width: 3
+            radius: 1.5
+            color: Colors.alpha(Colors.text, 0.25)
+            x: parent.width - 6
+            y: 10 + expansionFlick.visibleArea.yPosition * expansionFlick.height
+            height: Math.max(24, expansionFlick.visibleArea.heightRatio * expansionFlick.height)
         }
     }
 
@@ -169,6 +259,7 @@ ColumnLayout {
     // call — say if you want it elsewhere. Plain Item for the same
     // anchors-vs-Layout reason as the rows above.
     Item {
+        id: footerRow
         Layout.fillWidth: true
         implicitHeight: Math.max(trayRow.implicitHeight, dotsRow.implicitHeight)
 
@@ -214,4 +305,6 @@ ColumnLayout {
     Component { id: brightnessComp; Panels.Brightness {} }
     Component { id: volumeComp; Panels.Volume {} }
     Component { id: searchComp; Search {} }
+    Component { id: calendarComp; Panels.Calendar {} }
+    Component { id: systemComp; SystemMetrics {} }
 }

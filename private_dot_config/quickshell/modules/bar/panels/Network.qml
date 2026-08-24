@@ -42,19 +42,11 @@ ColumnLayout {
                 elide: Text.ElideRight
             }
 
-            Rectangle {
-                implicitWidth: 26
-                implicitHeight: 26
-                radius: 8
+            W.IconButton {
                 visible: Network.wifiEnabled
-                color: rescanMa.containsMouse ? Colors.base : "transparent"
-                Text { anchors.centerIn: parent; text: "\u{F0450}"; color: Colors.text; font.pixelSize: 14 }
-                MouseArea {
-                    id: rescanMa
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onClicked: Network.refresh()
-                }
+                glyph: "\u{F0450}"
+                glyphSize: 14
+                onClicked: Network.refresh()
             }
 
             W.Toggle {
@@ -175,10 +167,16 @@ ColumnLayout {
                         implicitWidth: 58
                         implicitHeight: 28
                         radius: 8
-                        color: Colors.accent
+                        // Lightened rather than tinted: a faint overlay is
+                        // invisible on an accent-filled button.
+                        color: connectMa.containsMouse
+                            ? Qt.lighter(Colors.accent, 1.2) : Colors.accent
+                        Behavior on color { ColorAnimation { duration: 120 } }
                         Text { anchors.centerIn: parent; text: "Connect"; color: Colors.base; font.pixelSize: 12 }
                         MouseArea {
+                            id: connectMa
                             anchors.fill: parent
+                            hoverEnabled: true
                             onClicked: {
                                 Network.connectTo(modelData.ssid, pwInput.text)
                                 root.pwPromptSsid = ""

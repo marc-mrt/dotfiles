@@ -28,11 +28,29 @@ ColumnLayout {
             Layout.fillWidth: true
             spacing: 10
 
-            Text {
-                text: Audio.muted ? "\u{F075F}" : "\u{F057E}"
-                color: Audio.muted ? Colors.alpha(Colors.text, 0.5) : Colors.text
-                font.pixelSize: 20
-                MouseArea { anchors.fill: parent; onClicked: Audio.toggleMute() }
+            // Pilled on hover like every other icon-sized control, rather
+            // than being a bare glyph that happens to be clickable.
+            Item {
+                implicitWidth: muteIcon.implicitWidth + 12
+                implicitHeight: muteIcon.implicitHeight + 8
+
+                W.IconPill {
+                    anchors.fill: parent
+                    hovered: muteMa.containsMouse
+                }
+                Text {
+                    id: muteIcon
+                    anchors.centerIn: parent
+                    text: Audio.muted ? "\u{F075F}" : "\u{F057E}"
+                    color: Audio.muted ? Colors.alpha(Colors.text, 0.5) : Colors.text
+                    font.pixelSize: 20
+                }
+                MouseArea {
+                    id: muteMa
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: Audio.toggleMute()
+                }
             }
 
             Rectangle {
@@ -50,17 +68,25 @@ ColumnLayout {
                         ? Colors.alpha(Colors.text, 0.3)
                         : Colors.accent
                 }
+                // Grows on hover/drag: the handle is the grabbable
+                // part, so it's what has to look grabbable. Anchored on
+                // its own center so it swells in place instead of
+                // drifting sideways as the size changes.
                 Rectangle {
-                    width: 14
-                    height: 14
-                    radius: 7
+                    id: handle
+                    width: volMa.containsMouse || volMa.pressed ? 18 : 14
+                    height: width
+                    radius: width / 2
                     color: Colors.text
                     y: (parent.height - height) / 2
                     x: Math.max(0, Math.min(parent.width - width,
                         parent.width * (Audio.volume / 100) - width / 2))
+                    Behavior on width { NumberAnimation { duration: 100 } }
                 }
                 MouseArea {
+                    id: volMa
                     anchors.fill: parent
+                    hoverEnabled: true
                     function apply(mx) {
                         Audio.setVolume((mx / width) * 100)
                     }

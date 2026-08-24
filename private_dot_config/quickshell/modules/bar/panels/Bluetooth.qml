@@ -33,19 +33,11 @@ ColumnLayout {
                 color: Colors.text
                 font.pixelSize: 13
             }
-            Rectangle {
-                implicitWidth: 26
-                implicitHeight: 26
-                radius: 8
+            W.IconButton {
                 visible: Bluetooth.powered
-                color: scanMa.containsMouse ? Colors.base : "transparent"
-                Text { anchors.centerIn: parent; text: "\u{F0450}"; color: Colors.text; font.pixelSize: 14 }
-                MouseArea {
-                    id: scanMa
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onClicked: Bluetooth.refresh()
-                }
+                glyph: "\u{F0450}"
+                glyphSize: 14
+                onClicked: Bluetooth.refresh()
             }
             W.Toggle {
                 checked: Bluetooth.powered

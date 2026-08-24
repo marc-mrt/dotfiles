@@ -43,17 +43,25 @@ ColumnLayout {
                     radius: 4
                     color: Colors.accent
                 }
+                // Grows on hover/drag: the handle is the grabbable
+                // part, so it's what has to look grabbable. Anchored on
+                // its own center so it swells in place instead of
+                // drifting sideways as the size changes.
                 Rectangle {
-                    width: 14
-                    height: 14
-                    radius: 7
+                    id: handle
+                    width: briMa.containsMouse || briMa.pressed ? 18 : 14
+                    height: width
+                    radius: width / 2
                     color: Colors.text
                     y: (parent.height - height) / 2
                     x: Math.max(0, Math.min(parent.width - width,
                         parent.width * (Brightness.brightness / 100) - width / 2))
+                    Behavior on width { NumberAnimation { duration: 100 } }
                 }
                 MouseArea {
+                    id: briMa
                     anchors.fill: parent
+                    hoverEnabled: true
                     function apply(mx) {
                         Brightness.setBrightness((mx / width) * 100)
                     }

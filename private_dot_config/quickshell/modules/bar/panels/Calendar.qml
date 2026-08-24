@@ -1,12 +1,21 @@
 import QtQuick
 import QtQuick.Layouts
 import "../../../config"
+import "../widgets" as W
 
-// Panel content only — month grid with today highlighted. Chrome (card
-// background, radius, padding) lives in Pad.qml's card.
+// Panel content only — month grid with today highlighted. Chrome (the
+// expansion's background, radius and padding) lives in
+// modules/pad/Overview.qml.
 ColumnLayout {
     id: root
     spacing: 10
+
+    // This used to get a card of its own sized to it (336px). As an inline
+    // overview tab it's handed the full pad width instead, and a 7-column
+    // fillWidth grid stretched that far turns every day cell into a wide
+    // bar rather than the round pill the today-highlight is drawn as. So
+    // the grid keeps roughly its old width and centers, instead of filling.
+    readonly property int gridWidth: 304
 
     readonly property date today: new Date()
     property int viewYear: today.getFullYear()
@@ -51,12 +60,13 @@ ColumnLayout {
 
     RowLayout {
         Layout.fillWidth: true
+        Layout.maximumWidth: root.gridWidth
+        Layout.alignment: Qt.AlignHCenter
 
-        Text {
-            text: "\u{F0141}"
-            color: Colors.text
-            font.pixelSize: 18
-            MouseArea { anchors.fill: parent; onClicked: root.shiftMonth(-1) }
+        W.IconButton {
+            glyph: "\u{F0141}"
+            glyphSize: 18
+            onClicked: root.shiftMonth(-1)
         }
         Text {
             Layout.fillWidth: true
@@ -66,16 +76,17 @@ ColumnLayout {
             font.pixelSize: 15
             font.bold: true
         }
-        Text {
-            text: "\u{F0142}"
-            color: Colors.text
-            font.pixelSize: 18
-            MouseArea { anchors.fill: parent; onClicked: root.shiftMonth(1) }
+        W.IconButton {
+            glyph: "\u{F0142}"
+            glyphSize: 18
+            onClicked: root.shiftMonth(1)
         }
     }
 
     GridLayout {
         Layout.fillWidth: true
+        Layout.maximumWidth: root.gridWidth
+        Layout.alignment: Qt.AlignHCenter
         columns: 7
         rowSpacing: 4
         columnSpacing: 4

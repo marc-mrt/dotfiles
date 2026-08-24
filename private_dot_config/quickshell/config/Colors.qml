@@ -15,6 +15,17 @@ QtObject {
         return Qt.rgba(color.r, color.g, color.b, a)
     }
 
+    // Escalating tint for a 0-100 load figure, so a hot metric stands out at
+    // a glance rather than only on close reading of the number. Shared by
+    // the overview's ring gauges and the system detail tab behind them, which
+    // have to agree — the same CPU reading turning amber in one and accent in
+    // the other would read as two different measurements.
+    function loadColor(percent) {
+        return percent >= 85 ? "#f7768e" // red — under real pressure
+            : percent >= 60 ? "#e0af68"  // amber — worth a glance
+            : accent
+    }
+
     property FileView view: FileView {
         path: Quickshell.env("HOME") + "/.config/quickshell/generated/colors.json"
         watchChanges: true

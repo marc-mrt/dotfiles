@@ -5,6 +5,10 @@ import "../../../config"
 // Small ring gauge — icon centered inside a circular progress arc. Used by
 // the pad overview's CPU/RAM/VRAM stats (see modules/pad/Overview.qml),
 // which used to be plain "icon percent%" text with no visual weight.
+//
+// Clickable: the hover disc is the round counterpart of W.IconPill's hover
+// tint, at the same strength, so a gauge reads as "you can press this" the
+// same way every other control in the pad does.
 Item {
     id: root
 
@@ -14,10 +18,38 @@ Item {
     property int size: 30
     readonly property real strokeWidth: 3
 
+    signal clicked
+
     implicitWidth: size
     implicitHeight: size
 
     Behavior on value { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+
+    // Declared first so the hover binding below doesn't evaluate against an
+    // id that doesn't exist yet. Being first costs nothing for input: the
+    // arc and icon that follow are a Shape and a Text, neither of which
+    // accepts mouse events, so clicks fall straight through to this.
+    // Sized to the hover disc, not the ring, so the whole tinted area is
+    // pressable rather than just the arc itself.
+    MouseArea {
+        id: ma
+        anchors.centerIn: parent
+        width: root.size + 8
+        height: root.size + 8
+        hoverEnabled: true
+        onClicked: root.clicked()
+    }
+
+    // Sits behind the arc and slightly outside it, so the tint reads as a
+    // target around the gauge rather than as a change to the gauge itself.
+    Rectangle {
+        anchors.centerIn: parent
+        width: root.size + 8
+        height: root.size + 8
+        radius: width / 2
+        color: ma.containsMouse ? Colors.alpha(Colors.text, 0.08) : "transparent"
+        Behavior on color { ColorAnimation { duration: 120 } }
+    }
 
     Shape {
         anchors.fill: parent
