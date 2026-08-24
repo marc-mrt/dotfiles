@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Services.Notifications
 
 // Native replacement for dunst. server registers as the desktop notification
@@ -114,6 +115,69 @@ QtObject {
                 root.safeDismiss(entry.notification)
         const ids = new Set(messages.map(m => m.id))
         root.history = root.history.filter(row => !ids.has(row.id))
+    }
+
+    // Class/desktop-entry names never agree across the two sides: Hyprland
+    // reports "app.zen_browser.zen" while the notification carries
+    // "Zen Browser". Stripping everything but letters and digits makes
+    // those "appzenbrowserzen" and "zenbrowser", which a containment test
+    // then matches — punctuation-insensitive without needing a per-app
+    // table. The >= 3 guard keeps a stub of a name from matching half the
+    // desktop.
+    function normalizeId(s) {
+        return (s || "").toLowerCase().replace(/[^a-z0-9]/g, "")
+    }
+
+    function focusApp(entry) {
+        if (!entry)
+            return
+        const wanted = [entry.groupKey, entry.appName]
+            .map(root.normalizeId)
+            .filter(s => s.length >= 3)
+        if (wanted.length === 0)
+            return
+        const match = Hyprland.toplevels.values.find(t => {
+            const cls = root.normalizeId(t.lastIpcObject && t.lastIpcObject.class)
+            return cls.length >= 3 && wanted.some(w => cls.includes(w) || w.includes(cls))
+        })
+        if (match)
+            Hyprland.dispatch("focuswindow address:" + match.address)
+    }
+
+    // Clicking a card means "take me to whatever posted this", not just
+    // "make it go away". Two steps, because neither one alone is enough:
+    //
+    // - The freedesktop "default" action is the only thing that can land
+    //   on the right *context* rather than just the right app — the actual
+    //   Zen tab the web notification came from, the right chat thread. Apps
+    //   that don't offer one simply don't have that ability, so it's
+    //   best-effort; the try/catch is the same already-closed-notification
+    //   guard safeDismiss() needs (the object is gone once the server
+    //   expired it, and reading .actions off it throws).
+    // - Raising the window is still done afterwards regardless: under
+    //   Wayland an app can't reliably focus itself without an activation
+    //   token and most don't try, so invoking the default action commonly
+    //   switches the tab without ever bringing the window forward.
+    //
+    // Only the newest message in the group carries the action worth
+    // following — that's the one that just fired and the one the click was
+    // aimed at (groups are built newest-first, see `groups` above).
+    function activateGroup(messages) {
+        const newest = messages[0]
+        if (newest && newest.notification) {
+            try {
+                for (const action of newest.notification.actions) {
+                    if (action.identifier === "default") {
+                        action.invoke()
+                        break
+                    }
+                }
+            } catch (e) {
+                // already closed — no actions left to invoke
+            }
+        }
+        root.focusApp(newest)
+        root.dismissGroup(messages)
     }
 
     function dismissAll() {

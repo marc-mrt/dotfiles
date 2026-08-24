@@ -1,6 +1,7 @@
 //@ pragma UseQApplication
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
 import "./modules"
@@ -138,6 +139,36 @@ ShellRoot {
         NotificationStack {
             id: notifContent
         }
+    }
+
+    // Hyprland-side focus for the pad. WlrKeyboardFocus only tells the
+    // compositor that this layer accepts keys — Hyprland still counts the
+    // last real window as the focused one, so opening the pad left the
+    // window underneath fully active (its border, its idea of "the current
+    // window") while the pad typed over it. hyprland_focus_grab_v1 is the
+    // protocol built for exactly this: while the grab holds, Hyprland
+    // treats the grabbed surfaces as what's focused, and the window
+    // underneath drops to its inactive treatment.
+    //
+    // notifWin joins the grab, but only while it's actually mapped — NOT
+    // to focus it (it stays focusable: false, never takes keyboard focus,
+    // and no longer wears the focused-card border either, see
+    // modules/NotificationStack.qml) but so a click on a notification
+    // reaches the card instead of being eaten as "clicked outside the
+    // grab". That's the same failure mode Exclusive keyboard focus caused
+    // above; naming the surface here is the supported way out of it.
+    //
+    // Deliberately no onCleared -> PadState.close(): padWin and
+    // padCornerCatcher already cover every pixel that isn't notifWin and
+    // close the pad themselves, and the `windows` list below re-commits
+    // whenever the notification stack empties or fills — a cleared handler
+    // would read that ordinary re-grab as "user clicked away" and close
+    // the pad the moment a notification arrived.
+    HyprlandFocusGrab {
+        active: PadState.shown
+        windows: Notifications.groups.length > 0
+            ? [padWin, padCornerCatcher, notifWin]
+            : [padWin, padCornerCatcher]
     }
 
     // OSD — transient toast for volume/brightness changes made outside

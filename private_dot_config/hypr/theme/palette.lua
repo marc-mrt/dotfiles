@@ -13,8 +13,8 @@ return {
   cyan    = "#33b1ff", cyan_br    = "#52bdff",
   white   = "#dfdfe0", white_br   = "#e4e4e5",
 
-  accent    = "#78a9ff", -- = blue
-  secondary = "#33b1ff", -- = cyan
+  accent    = "#67c2cb", -- teal, matched to aurora wallpaper.jpg
+  secondary = "#33b1ff", -- blue sits naturally next to teal in the aurora itself
 
   gtk_theme_name = "Nightfox-Carbon",
   gtk_scheme     = "prefer-dark",

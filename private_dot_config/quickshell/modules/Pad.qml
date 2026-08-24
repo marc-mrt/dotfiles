@@ -73,8 +73,11 @@ Item {
         height: inner.implicitHeight + Metrics.padPaddingTop + Metrics.padPadding
         radius: Metrics.padRadius
         color: Colors.alpha(Colors.surface, 0.9)
-        // Matches modules/NotificationStack.qml's card border, for a
-        // consistent look across every floating surface this shell shows.
+        // Accent border = "this surface has the compositor's focus", which
+        // the pad genuinely does now (shell.qml holds a HyprlandFocusGrab
+        // for as long as it's open). It's the only surface that wears it —
+        // modules/NotificationStack.qml's cards used to match this for
+        // looks alone and have gone neutral so the cue stays meaningful.
         border.width: 2
         border.color: Colors.accent
 

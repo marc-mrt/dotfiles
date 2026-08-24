@@ -21,8 +21,8 @@ hl.config({
         gaps_out       = 8,
         border_size    = 2,
         col = {
-            active_border   = { colors = { C.primary .. "ff" }, angle = 45 },
-            inactive_border = { colors = { C.surface .. "cc", C.surface .. "66" },   angle = 45 },
+            active_border   = { colors = { C.surface .. "ff" }, angle = 45 },
+            inactive_border = { colors = { C.surface .. "66" }, angle = 45 },
         },
         layout           = "dwindle",
         resize_on_border = true,
@@ -32,6 +32,11 @@ hl.config({
         rounding       = 10,
         rounding_power = 2,
         shadow         = { enabled = false },
+        dim_inactive = true,
+        dim_strength = 0.3,
+        dim_special = 0.2,
+        active_opacity = 1.0,
+        inactive_opacity = 0.82,
         blur = {
             enabled            = true,
             size               = 6,

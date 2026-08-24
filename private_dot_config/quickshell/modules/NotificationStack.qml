@@ -15,8 +15,12 @@ import "../services"
 // notification gets its own card rather than merging back into the first
 // — matches the order things actually arrived in.
 //
-// No close button — the whole card is one big click target that dismisses
-// its group, simpler than hunting for a specific icon.
+// No close button — the whole card is the target, and which gesture you
+// use says what you meant: fling it off either edge to dismiss it and be
+// done, or click it to be taken to whatever posted it (the exact Zen tab
+// where the app offers a default action — see Notifications.activateGroup)
+// with the card dismissed on the way out. Simpler than hunting for a
+// specific icon, and no gesture leaves the card sitting there unread.
 //
 // While the pad is closed, a card auto-hides itself from view 6s after its
 // newest message (services/Notifications.qml's `groups[].expiresAt`) —
@@ -106,13 +110,26 @@ ColumnLayout {
             required property var modelData
             // Layouts exclude invisible items from sizing, so this both
             // hides the card and closes the gap it would otherwise leave.
-            visible: PadState.shown || root.now < card.modelData.expiresAt
+            // cardMa.pressed keeps a card you're mid-swipe from vanishing
+            // underneath the cursor when its 6s auto-hide happens to land
+            // during the drag — releasing then either dismisses it or
+            // settles it back, and the timeout applies again from there.
+            visible: PadState.shown || cardMa.pressed
+                || root.now < card.modelData.expiresAt
             Layout.preferredWidth: Metrics.notifCardWidth
             implicitHeight: content.implicitHeight + 20
             radius: 14
             color: Colors.alpha(Colors.surface, 0.92)
+            // Neutral, deliberately NOT accent anymore: an accent border
+            // now means "this surface holds Hyprland's focus", which is
+            // the pad's alone (see modules/Pad.qml and shell.qml's
+            // HyprlandFocusGrab). Notifications never take focus — they're
+            // in the grab for clicks only — so they never wear it, apart
+            // from the blink below, where a *flash* of accent reads as
+            // "new content" rather than "focused".
+            readonly property color baseBorder: Colors.alpha(Colors.text, 0.14)
             border.width: 2
-            border.color: Colors.accent
+            border.color: card.baseBorder
 
             // Purely visual offset layered on top of the ColumnLayout's own
             // positioning — animating x/y directly would fight the Layout
@@ -149,16 +166,92 @@ ColumnLayout {
             SequentialAnimation {
                 id: blink
                 loops: 3
-                ColorAnimation { target: card; property: "border.color"; to: Colors.text; duration: 250 }
                 ColorAnimation { target: card; property: "border.color"; to: Colors.accent; duration: 250 }
+                ColorAnimation { target: card; property: "border.color"; to: card.baseBorder; duration: 250 }
             }
 
-            // Whole-card dismiss — no visible siblings intercept mouse
-            // events (plain Text/ColumnLayout, no MouseAreas of their
-            // own), so z doesn't matter here.
+            // Swipe-away, reusing the same Translate the slide-in
+            // animation drives rather than touching x — the card is a
+            // ColumnLayout child, so an animated/assigned x would just be
+            // overwritten by the next layout pass (see slideOffset above).
+            // Either direction dismisses: there's nothing behind a
+            // notification to reveal, so left vs right carries no meaning
+            // worth forcing the user to remember.
+            function flingAway() {
+                card.flingTo = slideOffset.x > 0
+                    ? card.width + 80 : -(card.width + 80)
+                fling.start()
+            }
+            property real flingTo: 0
+
+            ParallelAnimation {
+                id: fling
+                NumberAnimation {
+                    target: slideOffset; property: "x"; to: card.flingTo
+                    duration: 160; easing.type: Easing.OutCubic
+                }
+                NumberAnimation { target: card; property: "opacity"; to: 0; duration: 160 }
+                onFinished: Notifications.dismissGroup(card.modelData.messages)
+            }
+
+            ParallelAnimation {
+                id: settle
+                NumberAnimation {
+                    target: slideOffset; property: "x"; to: 0
+                    duration: 150; easing.type: Easing.OutCubic
+                }
+                NumberAnimation { target: card; property: "opacity"; to: 1; duration: 150 }
+            }
+
+            // Whole-card gesture surface — no visible siblings intercept
+            // mouse events (plain Text/ColumnLayout, no MouseAreas of
+            // their own), so z doesn't matter here.
+            //
+            // Drag is tracked by hand instead of via `drag.target`: that
+            // needs an Item to move, and the only thing safe to move here
+            // is the Translate, which isn't one. `dragging` latches past a
+            // small threshold so a click with a shaky hand still counts as
+            // a click, and — since onClicked fires after onReleased with
+            // the flag still set — is also what keeps a completed swipe
+            // from being treated as a click and jumping to the app.
             MouseArea {
+                id: cardMa
                 anchors.fill: parent
-                onClicked: Notifications.dismissGroup(card.modelData.messages)
+                property real pressX: 0
+                property bool dragging: false
+
+                onPressed: mouse => {
+                    settle.stop()
+                    cardMa.pressX = mouse.x
+                    cardMa.dragging = false
+                }
+                onPositionChanged: mouse => {
+                    const dx = mouse.x - cardMa.pressX
+                    if (!cardMa.dragging && Math.abs(dx) > 8)
+                        cardMa.dragging = true
+                    if (!cardMa.dragging)
+                        return
+                    slideOffset.x = dx
+                    // Fades toward, never to, invisible — the card has to
+                    // stay grabbable all the way to the release point.
+                    card.opacity = Math.max(0.2, 1 - Math.abs(dx) / card.width)
+                }
+                onReleased: {
+                    if (!cardMa.dragging)
+                        return
+                    if (Math.abs(slideOffset.x) > card.width * 0.3)
+                        card.flingAway()
+                    else
+                        settle.start()
+                }
+                onClicked: {
+                    if (cardMa.dragging)
+                        return
+                    Notifications.activateGroup(card.modelData.messages)
+                    // Jumping to another window means the pad is in the
+                    // way; harmless no-op when it was never open.
+                    PadState.close()
+                }
             }
 
             ColumnLayout {

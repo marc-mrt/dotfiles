@@ -17,6 +17,7 @@ local targets = {
   { tpl = "nvim-palette.lua.tpl", out = HOME.."/.config/nvim/lua/palette.lua" },
   { tpl = "hyprlock-colors.tpl",  out = HOME.."/.config/hypr/hyprlock-colors.conf" },
   { tpl = "colors.json.tpl",      out = HOME.."/.config/quickshell/generated/colors.json" },
+  { tpl = "hyprtoolkit.conf.tpl", out = HOME.."/.config/hypr/hyprtoolkit.conf" },
 }
 
 local function read_file(path)
@@ -39,6 +40,7 @@ local function extend_vars(vars)
     ext[k] = v
     if type(v) == "string" and v:match("^#%x%x%x%x%x%x$") then
       ext[k .. "_stripped"] = v:sub(2)
+      ext[k .. "_argb"] = "0xFF" .. v:sub(2)   -- hyprtoolkit's 0xAARRGGBB format, alpha forced opaque
     end
   end
   return ext
