@@ -28,4 +28,23 @@ QtObject {
     // independently of the pad at the bottom-right corner (see
     // shell.qml's notifWin).
     readonly property int notifCardWidth: 480
+
+    // Window switcher (modules/WindowSwitcher.qml) — one card per
+    // workspace, laid out side-by-side. switcherCanvas* is the layout
+    // canvas inside each card (bounding box of that workspace's windows,
+    // scaled to fit) — window boxes are screencopy snapshots with a
+    // captioned footer, not a separate text list.
+    readonly property real switcherTopFraction: 0.12
+    readonly property int switcherCanvasWidth: 560
+    readonly property int switcherCanvasHeight: 340
+    readonly property int switcherFooterHeight: 28
+    readonly property int switcherTileRadius: 10
+    // Small inset between adjacent window tiles within one workspace —
+    // cosmetic breathing room, not a reflection of Hyprland's real gaps_in.
+    readonly property int switcherTileGap: 6
+    readonly property int switcherRadius: 20
+    readonly property int switcherPadding: 16
+    // Gap between workspace columns — the only thing delimiting them now
+    // that there's one outer card instead of one per workspace.
+    readonly property int switcherGroupSpacing: 32
 }

@@ -11,15 +11,17 @@ ShellRoot {
     // SUPER+SPACE / SUPER+Tab (see hypr/lua/key_bindings.lua) run these via
     // `qs ipc call pad ...` without needing a dedicated global-shortcut
     // protocol. toggleOverview opens straight to the meta-info overview
-    // (was SUPER+W / SUPER+SPACE-drun); toggleWindows opens straight to
-    // unified search pre-biased toward open windows (was SUPER+Tab/rofi).
+    // (was SUPER+W / SUPER+SPACE-drun); toggleWindows drives the dedicated
+    // window switcher (services/SwitcherState.qml) — every SUPER+Tab press
+    // re-invokes the same IPC call, which is what lets repeated presses
+    // step the cycle (was SUPER+Tab/rofi).
     IpcHandler {
         target: "pad"
         function toggleOverview(): void {
-            PadState.toggle("")
+            PadState.toggle()
         }
         function toggleWindows(): void {
-            PadState.toggle("windows")
+            SwitcherState.cycle()
         }
     }
 
@@ -68,6 +70,27 @@ ShellRoot {
         color: "transparent"
 
         Pad {
+            anchors.fill: parent
+        }
+    }
+
+    // Window switcher — same screen-sized/pinned/no-border toplevel trick
+    // as padWin above (and matched by the same "quickshell-pad" class rule
+    // in hypr/lua/window_rules.lua, since it shares the org.quickshell
+    // class), but its own window and content. SwitcherState only moves a
+    // highlight while cycling; real focus doesn't move until Enter/click
+    // (modules/WindowSwitcher.qml).
+    FloatingWindow {
+        id: switcherWin
+        screen: Quickshell.screens[0]
+        visible: SwitcherState.shown
+        title: "quickshell-window-switcher"
+
+        implicitWidth: switcherWin.screen.width
+        implicitHeight: switcherWin.screen.height
+        color: "transparent"
+
+        WindowSwitcher {
             anchors.fill: parent
         }
     }

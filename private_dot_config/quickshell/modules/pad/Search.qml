@@ -64,11 +64,10 @@ ColumnLayout {
         .filter(s => !root.query || s.name.toLowerCase().includes(root.query))
         .map(s => ({ kind: "panel", name: s.name, iconPath: "", target: s.target }))
 
-    // SUPER+Tab (searchBias === "windows") biases open windows to the top;
-    // SUPER+SPACE leads with apps, matching the old drun muscle memory.
-    readonly property var results: PadState.searchBias === "windows"
-        ? [...windowResults, ...appResults, ...shortcutResults]
-        : [...appResults, ...windowResults, ...shortcutResults]
+    // Apps lead, matching the old drun muscle memory — window switching has
+    // its own dedicated SUPER+Tab overlay now (modules/WindowSwitcher.qml),
+    // so this list no longer needs a windows-first bias.
+    readonly property var results: [...appResults, ...windowResults, ...shortcutResults]
 
     property int selected: 0
     onResultsChanged: selected = 0

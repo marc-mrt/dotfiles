@@ -69,12 +69,6 @@ Item {
                 // search) still animate normally.
                 widthBehavior.enabled = true
                 heightBehavior.enabled = true
-                if (PadState.searchBias === "windows") {
-                    // SUPER+Tab: land straight on the search tab, pre-biased
-                    // to open windows (see Search.qml's windows-first
-                    // ordering).
-                    PanelState.inlineOpen = "search"
-                }
             }
         }
     }
