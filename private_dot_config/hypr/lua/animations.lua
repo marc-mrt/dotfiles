@@ -19,10 +19,9 @@ hl.animation({ leaf = "fade",        enabled = true, speed = 10, bezier = "defau
 -- fadeDim (the dim_inactive color overlay) interpolates in visible discrete
 -- steps in this Hyprland version, independent of blur/opacity/vfr/render
 -- settings -- confirmed by isolating it from inactive_opacity, which fades
--- smoothly on its own. Making it instant removes the choppy ramp; the
--- window still darkens the moment focus changes while opacity fades
--- smoothly on top.
-hl.animation({ leaf = "fadeDim",     enabled = false })
+-- smoothly on its own. Kept short (~150ms) so the step count stays low
+-- enough to be imperceptible instead of disabling it outright.
+hl.animation({ leaf = "fadeDim",     enabled = true, speed = 1.5, bezier = "default" })
 hl.animation({ leaf = "workspaces",  enabled = true, speed = 5,  bezier = "wind" })
 
 -- Quickshell's pad + notification stack are wlr-layer-shell surfaces
