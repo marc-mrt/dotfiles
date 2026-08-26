@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
@@ -44,27 +43,30 @@ RowLayout {
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 // Left activates the app itself (SNI's primary action —
                 // typically show/raise); right opens the tray item's own
-                // menu, native platform behavior rather than us
-                // reconstructing it as a custom list.
+                // menu — custom-rendered (W.TrayMenu) to match the rest of
+                // the pad rather than the OS/Qt menu theme.
                 onClicked: (mouse) => {
                     if (mouse.button === Qt.LeftButton)
                         trayItem.modelData.activate()
                     else if (trayItem.modelData.hasMenu)
-                        menuAnchor.open()
+                        trayMenu.visible = true
                     else
                         trayItem.modelData.display(null, 0, 0)
                 }
             }
 
-            ToolTip.visible: ma.containsMouse
-            ToolTip.delay: 400
-            ToolTip.text: trayItem.modelData.tooltipTitle || trayItem.modelData.title || trayItem.modelData.id || ""
+            W.ToolTip {
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.top
+                anchors.bottomMargin: 6
+                show: ma.containsMouse
+                text: trayItem.modelData.tooltipTitle || trayItem.modelData.title || trayItem.modelData.id || ""
+            }
 
-            QsMenuAnchor {
-                id: menuAnchor
+            W.TrayMenu {
+                id: trayMenu
+                anchorItem: trayItem
                 menu: trayItem.modelData.menu
-                anchor.item: trayItem
-                anchor.rect.y: trayItem.height
             }
         }
     }

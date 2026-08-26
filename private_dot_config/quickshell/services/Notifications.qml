@@ -27,6 +27,58 @@ QtObject {
     property bool dnd: false
     property int nextId: 0
 
+    // Keyboard-driven selection while the pad is open (Tab/Shift+Tab to
+    // move, Enter to activate, Backspace/Delete to dismiss — see
+    // modules/Pad.qml's keyCatcher). Tracked by group id, not index: ids
+    // stay fixed as `groups` is rebuilt (see below), so a card growing or
+    // a sibling being dismissed doesn't shift the selection onto the wrong
+    // card the way an index would. -1 means nothing selected. Self-healing
+    // if the selected group vanishes from under it (dismissed some other
+    // way) — selectedGroup() below just finds nothing and callers no-op.
+    property int selectedGroupId: -1
+
+    function clearSelection() {
+        root.selectedGroupId = -1
+    }
+
+    function selectedGroup() {
+        return root.groups.find(g => g.id === root.selectedGroupId) || null
+    }
+
+    function selectNext() {
+        if (root.groups.length === 0) {
+            root.selectedGroupId = -1
+            return
+        }
+        const idx = root.groups.findIndex(g => g.id === root.selectedGroupId)
+        root.selectedGroupId = root.groups[(idx + 1) % root.groups.length].id
+    }
+
+    function selectPrev() {
+        if (root.groups.length === 0) {
+            root.selectedGroupId = -1
+            return
+        }
+        const idx = root.groups.findIndex(g => g.id === root.selectedGroupId)
+        root.selectedGroupId = root.groups[idx <= 0 ? root.groups.length - 1 : idx - 1].id
+    }
+
+    function activateSelected() {
+        const g = root.selectedGroup()
+        if (g) {
+            root.activateGroup(g.messages)
+            root.selectedGroupId = -1
+        }
+    }
+
+    function dismissSelected() {
+        const g = root.selectedGroup()
+        if (g) {
+            root.dismissGroup(g.messages)
+            root.selectedGroupId = -1
+        }
+    }
+
     function toggleDnd() {
         dnd = !dnd
     }

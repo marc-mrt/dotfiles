@@ -62,6 +62,7 @@ Item {
                 heightBehavior.enabled = false
                 root.everActive = false
                 PanelState.close()
+                Notifications.clearSelection()
                 keyCatcher.text = ""
             } else {
                 // Back on now that the card is settled and about to show
@@ -143,7 +144,35 @@ Item {
             Keys.onEscapePressed: PadState.close()
             Keys.onUpPressed: overview.moveSelection(-1)
             Keys.onDownPressed: overview.moveSelection(1)
-            Keys.onReturnPressed: overview.activateSelected()
+            // A notification selection (Tab, below) takes over Enter the
+            // same way it takes over Backspace/Delete — whichever thing
+            // Tab last pointed at is what the other keys act on.
+            Keys.onReturnPressed: {
+                if (Notifications.selectedGroupId !== -1)
+                    Notifications.activateSelected()
+                else
+                    overview.activateSelected()
+            }
+            // Tab/Shift+Tab cycle the notification stack (independent of
+            // the pad's own overview tabs — see services/Notifications.qml)
+            // rather than doing normal focus-chain traversal, since this is
+            // the only focusable item in the pad anyway. Backspace/Delete
+            // only dismiss the selected notification instead of editing the
+            // search text while one is actually selected, so typing a query
+            // is unaffected until Tab has been pressed.
+            Keys.onPressed: (event) => {
+                if (event.key === Qt.Key_Tab) {
+                    if (event.modifiers & Qt.ShiftModifier)
+                        Notifications.selectPrev()
+                    else
+                        Notifications.selectNext()
+                    event.accepted = true
+                } else if (Notifications.selectedGroupId !== -1
+                        && (event.key === Qt.Key_Backspace || event.key === Qt.Key_Delete)) {
+                    Notifications.dismissSelected()
+                    event.accepted = true
+                }
+            }
             onTextEdited: {
                 PadState.searchQuery = text
                 if (text.length > 0)

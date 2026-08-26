@@ -128,8 +128,15 @@ ColumnLayout {
             // from the blink below, where a *flash* of accent reads as
             // "new content" rather than "focused".
             readonly property color baseBorder: Colors.alpha(Colors.text, 0.14)
+            // Keyboard selection (Tab, while the pad is open — see
+            // services/Notifications.qml's selectedGroupId and
+            // modules/Pad.qml's keyCatcher) reuses the accent border safely:
+            // blink (below) only ever runs while the pad is closed, and
+            // selection only ever exists while it's open, so the two never
+            // compete for this property.
+            readonly property bool selected: card.modelData.id === Notifications.selectedGroupId
             border.width: 2
-            border.color: card.baseBorder
+            border.color: card.selected ? Colors.accent : card.baseBorder
 
             // Purely visual offset layered on top of the ColumnLayout's own
             // positioning — animating x/y directly would fight the Layout
@@ -245,7 +252,16 @@ ColumnLayout {
                         settle.start()
                 }
                 onClicked: {
-                    if (cardMa.dragging)
+                    // Not `cardMa.dragging` — that latches permanently on
+                    // the first 8px crossing and never resets, so ordinary
+                    // mouse tremor during a plain click (easy to hit across
+                    // a press-hold-release) got misclassified as an
+                    // abandoned swipe: the card visibly nudged/faded for
+                    // the duration of the press, then the click was
+                    // swallowed on release. Judge intent by where the card
+                    // actually ended up instead — if it drifted back near
+                    // home before release, it was always just a click.
+                    if (Math.abs(slideOffset.x) > 8)
                         return
                     Notifications.activateGroup(card.modelData.messages)
                     // Jumping to another window means the pad is in the
