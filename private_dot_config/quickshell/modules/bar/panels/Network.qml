@@ -18,41 +18,22 @@ ColumnLayout {
         pwPromptSsid = ""
     }
 
-    Text {
-        text: "Wi-Fi"
-        color: Colors.text
-        font.pixelSize: 15
-        font.bold: true
+    RowLayout {
+        Layout.fillWidth: true
         Layout.bottomMargin: 2
         Layout.leftMargin: 2
-    }
+        spacing: 8
 
-    // Header: state + rescan + radio toggle
-    W.Section {
-        RowLayout {
+        Text {
             Layout.fillWidth: true
-            spacing: 8
-
-            Text {
-                Layout.fillWidth: true
-                text: !Network.wifiEnabled ? "Wi-Fi off"
-                    : Network.connected ? Network.activeSsid : "Not connected"
-                color: Colors.text
-                font.pixelSize: 13
-                elide: Text.ElideRight
-            }
-
-            W.IconButton {
-                visible: Network.wifiEnabled
-                glyph: "\u{F0450}"
-                glyphSize: 14
-                onClicked: Network.refresh()
-            }
-
-            W.Toggle {
-                checked: Network.wifiEnabled
-                onToggled: Network.toggleWifi()
-            }
+            text: "Wi-Fi"
+            color: Colors.text
+            font.pixelSize: 15
+            font.bold: true
+        }
+        W.Toggle {
+            checked: Network.wifiEnabled
+            onToggled: Network.toggleWifi()
         }
     }
 

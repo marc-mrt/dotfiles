@@ -7,7 +7,8 @@ import "../widgets" as W
 // in the pad overview on click (see services/PanelState.qml's inlineOpen).
 Item {
     id: root
-    readonly property int connectedCount: Bluetooth.devices.filter(d => d.connected).length
+    readonly property int connectedCount: Bluetooth.devices
+        ? Bluetooth.devices.values.filter(d => d.connected).length : 0
 
     implicitWidth: icon.implicitWidth + 20
     implicitHeight: Metrics.barHeight
