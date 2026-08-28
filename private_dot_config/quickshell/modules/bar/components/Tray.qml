@@ -10,7 +10,13 @@ import "../widgets" as W
 // widget (see W.IconPill usage in bar/components/Network.qml etc.), rather
 // than bare icons floating with no feedback.
 RowLayout {
+    id: root
     spacing: 4
+
+    // Single shared popup for every item, not one per delegate: reusing the
+    // same PopupWindow means right-clicking a different item just repoints
+    // it (old menu closes, new one opens) instead of leaving the previous
+    // instance's popup dangling open alongside the new one.
     Repeater {
         model: SystemTray.items
         Item {
@@ -48,8 +54,11 @@ RowLayout {
                 onClicked: (mouse) => {
                     if (mouse.button === Qt.LeftButton)
                         trayItem.modelData.activate()
-                    else if (trayItem.modelData.hasMenu)
+                    else if (trayItem.modelData.hasMenu) {
+                        trayMenu.anchorItem = trayItem
+                        trayMenu.menu = trayItem.modelData.menu
                         trayMenu.visible = true
+                    }
                     else
                         trayItem.modelData.display(null, 0, 0)
                 }
@@ -62,12 +71,10 @@ RowLayout {
                 show: ma.containsMouse
                 text: trayItem.modelData.tooltipTitle || trayItem.modelData.title || trayItem.modelData.id || ""
             }
-
-            W.TrayMenu {
-                id: trayMenu
-                anchorItem: trayItem
-                menu: trayItem.modelData.menu
-            }
         }
+    }
+
+    W.TrayMenu {
+        id: trayMenu
     }
 }

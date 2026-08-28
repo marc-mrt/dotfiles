@@ -10,6 +10,10 @@ QtObject {
     readonly property color surface: palette.surface ?? "#24283b"
     readonly property color text: palette.text ?? "#c0caf5"
     readonly property color accent: palette.accent ?? "#7aa2f7"
+    // Same red loadColor() escalates to under real pressure — shared here
+    // under a semantic name for anything destructive (disconnect, forget,
+    // remove) rather than load-related.
+    readonly property color destructive: palette.destructive ?? "#f7768e"
 
     function alpha(color, a) {
         return Qt.rgba(color.r, color.g, color.b, a)
@@ -21,7 +25,7 @@ QtObject {
     // have to agree — the same CPU reading turning amber in one and accent in
     // the other would read as two different measurements.
     function loadColor(percent) {
-        return percent >= 85 ? "#f7768e" // red — under real pressure
+        return percent >= 85 ? destructive // red — under real pressure
             : percent >= 60 ? "#e0af68"  // amber — worth a glance
             : accent
     }

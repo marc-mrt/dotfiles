@@ -80,12 +80,20 @@ ColumnLayout {
                                 font.pixelSize: 13
                                 elide: Text.ElideRight
                             }
+                            // Same hover-previews-the-action treatment as
+                            // bar/panels/Bluetooth.qml's device rows —
+                            // Disconnect in destructive red once hovering a
+                            // connected network would drop it.
                             Text {
-                                text: modelData.active ? "Connected"
-                                    : modelData.secured ? "Secured" : "Open"
-                                color: modelData.active ? Colors.accent
-                                    : Colors.alpha(Colors.text, 0.5)
+                                text: modelData.active
+                                    ? (rowMa.containsMouse ? "Disconnect" : "Connected")
+                                    : (rowMa.containsMouse ? "Connect"
+                                        : modelData.secured ? "Secured" : "Open")
+                                color: modelData.active
+                                    ? (rowMa.containsMouse ? Colors.destructive : Colors.accent)
+                                    : (rowMa.containsMouse ? Colors.accent : Colors.alpha(Colors.text, 0.5))
                                 font.pixelSize: 11
+                                Behavior on color { ColorAnimation { duration: 120 } }
                             }
                         }
                         Text {

@@ -61,42 +61,31 @@ ColumnLayout {
         onTriggered: root.now = new Date()
     }
 
-    // Top row — purely informative stats (top-left) and the interactive
-    // widgets (top-right), pinned to opposite corners. Plain Item, not a
-    // Layout: both groups use anchors, which is undefined behavior on a
-    // direct Layout child (see the clock block below for the same reason).
+    // Top row — settings + stats (top-left) and the status widgets
+    // (top-right), pinned to opposite corners. Plain Item, not a Layout:
+    // both groups use anchors, which is undefined behavior on a direct
+    // Layout child (see the clock block below for the same reason).
     Item {
         id: topRow
         Layout.fillWidth: true
         implicitHeight: Math.max(statsRow.implicitHeight, widgetsRow.implicitHeight)
 
-        // Ring color escalates with load (Colors.loadColor) so a hot metric
+        // Bar color escalates with load (Colors.loadColor) so a hot metric
         // stands out at a glance, not just on close reading of the number.
-        // All three open the same system tab — the detail view covers all
-        // three anyway, so sending each ring somewhere different would just
-        // mean picking the right one to click.
+        // One compact pill rather than three separate gauges — it opens the
+        // same system tab either way, so there was never a reason to send
+        // each metric somewhere different.
         RowLayout {
             id: statsRow
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             spacing: 10
 
-            W.RingMeter {
-                icon: "\u{F2DB}"
-                value: SystemStats.cpuPercent
-                ringColor: Colors.loadColor(SystemStats.cpuPercent)
-                onClicked: PanelState.toggleInline("system")
-            }
-            W.RingMeter {
-                icon: "\u{EFC5}" // fa-memory
-                value: SystemStats.ramPercent
-                ringColor: Colors.loadColor(SystemStats.ramPercent)
-                onClicked: PanelState.toggleInline("system")
-            }
-            W.RingMeter {
-                icon: "\u{EF61}" // fa-sd-card — closest fit, Font Awesome has no dedicated gpu icon
-                value: SystemStats.vramPercent
-                ringColor: Colors.loadColor(SystemStats.vramPercent)
+            C.Settings {}
+            W.MiniMetrics {
+                cpu: SystemStats.cpuPercent
+                ram: SystemStats.ramPercent
+                vram: SystemStats.vramPercent
                 onClicked: PanelState.toggleInline("system")
             }
         }
@@ -236,21 +225,60 @@ ColumnLayout {
                     : PanelState.inlineOpen === "search" ? searchComp
                     : PanelState.inlineOpen === "calendar" ? calendarComp
                     : PanelState.inlineOpen === "system" ? systemComp
+                    : PanelState.inlineOpen === "settings" ? settingsComp
                     : null
             }
         }
 
-        // Thin scroll indicator — without it there's no hint that anything
-        // is cut off. Hand-rolled rather than QtQuick.Controls' ScrollBar
+        // Scroll indicator — click-to-jump and drag-to-scroll, not just a
+        // passive hint that content is cut off. The hit area (14px) is much
+        // wider than the painted line (3px) so it doesn't take pixel-perfect
+        // aim to grab, and pressing anywhere on the track jumps straight to
+        // that position instead of requiring a drag from the handle's
+        // current spot. Hand-rolled rather than QtQuick.Controls' ScrollBar
         // purely so it picks up Colors like everything else here.
-        Rectangle {
+        Item {
+            id: scrollTrack
             visible: expansionFlick.interactive
-            width: 3
-            radius: 1.5
-            color: Colors.alpha(Colors.text, 0.25)
-            x: parent.width - 6
-            y: 10 + expansionFlick.visibleArea.yPosition * expansionFlick.height
-            height: Math.max(24, expansionFlick.visibleArea.heightRatio * expansionFlick.height)
+            x: parent.width - 14
+            y: 10
+            width: 14
+            height: parent.height - 20
+
+            readonly property real handleHeight:
+                Math.max(24, expansionFlick.visibleArea.heightRatio * height)
+            readonly property real maxScroll:
+                expansionFlick.contentHeight - expansionFlick.height
+            readonly property real usableTrack: height - handleHeight
+
+            Rectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: trackMa.containsMouse || trackMa.pressed ? 5 : 3
+                radius: width / 2
+                color: trackMa.pressed
+                    ? Colors.alpha(Colors.text, 0.5)
+                    : Colors.alpha(Colors.text, 0.25)
+                y: scrollTrack.usableTrack > 0
+                    ? expansionFlick.visibleArea.yPosition * expansionFlick.height : 0
+                height: scrollTrack.handleHeight
+                Behavior on width { NumberAnimation { duration: 100 } }
+                Behavior on color { ColorAnimation { duration: 100 } }
+            }
+
+            MouseArea {
+                id: trackMa
+                anchors.fill: parent
+                hoverEnabled: true
+                function apply(my) {
+                    if (scrollTrack.usableTrack <= 0)
+                        return
+                    const frac = Math.max(0, Math.min(1,
+                        (my - scrollTrack.handleHeight / 2) / scrollTrack.usableTrack))
+                    expansionFlick.contentY = frac * scrollTrack.maxScroll
+                }
+                onPressed: (m) => apply(m.y)
+                onPositionChanged: (m) => { if (pressed) apply(m.y) }
+            }
         }
     }
 
@@ -307,4 +335,5 @@ ColumnLayout {
     Component { id: searchComp; Search {} }
     Component { id: calendarComp; Panels.Calendar {} }
     Component { id: systemComp; SystemMetrics {} }
+    Component { id: settingsComp; Panels.Settings {} }
 }

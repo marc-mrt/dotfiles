@@ -128,10 +128,21 @@ ColumnLayout {
                         font.pixelSize: 13
                         elide: Text.ElideRight
                     }
+                    // Hovering swaps the label to the action a click will
+                    // actually trigger (Disconnect/Connect), and the color
+                    // with it — destructive red once hovering would drop the
+                    // connection, so the row previews the consequence of the
+                    // click before it happens rather than just naming the
+                    // current state.
                     Text {
-                        text: modelData.connected ? "Connected" : "Not connected"
-                        color: modelData.connected ? Colors.accent : Colors.alpha(Colors.text, 0.5)
+                        text: modelData.connected
+                            ? (rowMa.containsMouse ? "Disconnect" : "Connected")
+                            : (rowMa.containsMouse ? "Connect" : "Not connected")
+                        color: modelData.connected
+                            ? (rowMa.containsMouse ? Colors.destructive : Colors.accent)
+                            : (rowMa.containsMouse ? Colors.accent : Colors.alpha(Colors.text, 0.5))
                         font.pixelSize: 11
+                        Behavior on color { ColorAnimation { duration: 120 } }
                     }
                 }
             }
