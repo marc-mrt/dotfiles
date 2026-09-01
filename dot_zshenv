@@ -1,0 +1,20 @@
+#!/bin/zsh
+
+##
+# Sourced by zsh for *every* shell — login, interactive and scripts.
+#
+# Its only job is to point zsh at the real config directory. Without this,
+# zsh reads ~/.zshrc and everything under ~/.config/zsh is dead weight.
+# Keeping it here rather than in /etc/zsh/zshenv makes the repo self-contained
+# on any machine.
+#
+export ZDOTDIR=${XDG_CONFIG_HOME:-$HOME/.config}/zsh
+
+##
+# Machine-local, never-committed overrides.
+#
+# See ~/.config/zsh/rc.d/99-local.zsh for the interactive equivalent. This one
+# is for variables that non-interactive shells also need (tokens read by
+# scripts, private registry URLs, work proxies).
+#
+[[ -r ${ZDOTDIR}/zshenv.local ]] && . ${ZDOTDIR}/zshenv.local

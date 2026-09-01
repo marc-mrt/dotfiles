@@ -4,6 +4,14 @@
 # Environment variables
 #
 
+{{ if eq .chezmoi.os "darwin" -}}
+# Homebrew.
+# Must run before anything below resolves a command, since on Apple Silicon
+# /opt/homebrew/bin is not on the default PATH at all.
+[[ -x /opt/homebrew/bin/brew ]] &&
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+
+{{ end -}}
 # -U ensures each entry in these is unique (that is, discards duplicates).
 export -U PATH path FPATH fpath MANPATH manpath
 export -UT INFOPATH infopath
@@ -23,14 +31,25 @@ path=(
 # (Note: Zsh's completions system will automatically autoload completion
 # functions inside dirs that are in your $fpath. So, no need to explicitly
 # autoload those.
+{{ if eq .chezmoi.os "darwin" -}}
+# $HOMEBREW_PREFIX below is exported by `brew shellenv` above. It carries the
+# completions shipped by brew formulae, and must land on $fpath before
+# zsh-autocomplete runs compinit in 06-plugins.zsh.
+{{ end -}}
 fpath=(
     $ZDOTDIR/functions
     ~/.local/share/zsh/site-functions
+{{ if eq .chezmoi.os "darwin" -}}
+    $HOMEBREW_PREFIX/share/zsh/site-functions
+{{ end -}}
     $fpath
 )
 
-# Mise
-eval "$(mise activate zsh)"
+# Mise.
+# Guarded so a fresh machine without mise still gets a working shell instead
+# of an error on every prompt.
+command -v mise >/dev/null &&
+    eval "$(mise activate zsh)"
 
 # gpg key
 export GPG_TTY=$TTY
@@ -39,4 +58,8 @@ export GPG_TTY=$TTY
 export PAGER=less
 export LESS="-R"
 export EDITOR=nvim
+{{ if eq .chezmoi.os "darwin" -}}
+export VISUAL=$EDITOR
+{{ else -}}
 export VISUAL="flatpak run dev.zed.Zed -n"
+{{ end -}}

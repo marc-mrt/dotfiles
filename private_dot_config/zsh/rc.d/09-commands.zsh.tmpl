@@ -6,7 +6,12 @@
 # Always set aliases _last,_ so they don't get used in function definitions.
 #
 
+{{ if eq .chezmoi.os "darwin" -}}
+# BSD ls has no --color; -G is its equivalent.
+alias ls='ls -G'
+{{ else -}}
 alias ls='ls --color=auto'
+{{ end -}}
 alias l="ls -la"
 
 # These aliases enable you to paste example code into the terminal without the
