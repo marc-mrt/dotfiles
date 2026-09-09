@@ -18,7 +18,7 @@ RowLayout {
             ? (root.muted ? "\u{F075F}" : "\u{F057E}")
             : "\u{2600}"
         color: Colors.text
-        font.pixelSize: 18
+        font.pixelSize: Metrics.iconButtonGlyphSize
     }
 
     Rectangle {
@@ -41,7 +41,7 @@ RowLayout {
     Text {
         text: root.muted ? "Muted" : (Osd.value + "%")
         color: Colors.text
-        font.pixelSize: 11
+        font.pixelSize: Metrics.fontSecondary
         Layout.preferredWidth: 40
         horizontalAlignment: Text.AlignRight
     }

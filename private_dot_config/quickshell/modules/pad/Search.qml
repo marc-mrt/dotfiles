@@ -5,6 +5,7 @@ import Quickshell.Hyprland
 import Quickshell.Widgets
 import "../../config"
 import "../../services"
+import "../ui" as W
 
 // Unified search — apps, open windows, and pad shortcuts in one filtered,
 // keyboard-navigable list. Pad.qml forwards Up/Down/Enter from its hidden
@@ -27,23 +28,13 @@ ColumnLayout {
         { name: "Calendar", target: "calendar" }
     ]
 
-    // Icon lookup by window class, same heuristic Workspaces.qml already
-    // uses for taskbar-style icons: class -> desktop entry -> theme path.
-    function windowIconPath(t) {
-        const cls = (t.lastIpcObject && t.lastIpcObject.class) || ""
-        if (!cls)
-            return ""
-        const entry = DesktopEntries.heuristicLookup(cls)
-        return entry ? Quickshell.iconPath(entry.icon, "") : ""
-    }
-
     readonly property var windowResults: {
         const q = root.query
         return Hyprland.toplevels.values
             .map(t => ({
                 kind: "window",
                 name: t.title || (t.lastIpcObject && t.lastIpcObject.class) || "Window",
-                iconPath: root.windowIconPath(t),
+                iconPath: Hypr.iconForClass((t.lastIpcObject && t.lastIpcObject.class) || ""),
                 toplevel: t
             }))
             .filter(r => !q || r.name.toLowerCase().includes(q))
@@ -102,12 +93,7 @@ ColumnLayout {
             r.entry.execute()
             PadState.close()
         } else if (r.kind === "window") {
-            // Was Hyprland.dispatch("focuswindow address:" + address),
-            // which this Hyprland's Lua config parser rejects outright —
-            // so picking a window here closed the pad and left focus
-            // exactly where it was, silently. See the matching comment on
-            // services/Notifications.qml's focusApp() for the details.
-            Hyprland.dispatch('hl.dsp.focus({ window = "address:0x' + r.toplevel.address + '" })')
+            Hypr.focusWindow(r.toplevel.address)
             PadState.close()
         } else if (r.kind === "panel") {
             // Leaves the query/PadState cleanup to Pad.qml's reactive
@@ -125,13 +111,13 @@ ColumnLayout {
         Text {
             text: "\u{F0349}"
             color: Colors.alpha(Colors.text, 0.5)
-            font.pixelSize: 15
+            font.pixelSize: Metrics.fontBody
         }
         Text {
             Layout.fillWidth: true
             text: PadState.searchQuery
             color: Colors.text
-            font.pixelSize: 15
+            font.pixelSize: Metrics.fontBody
             elide: Text.ElideRight
         }
     }
@@ -140,72 +126,38 @@ ColumnLayout {
         visible: root.results.length === 0
         text: "No matches"
         color: Colors.alpha(Colors.text, 0.5)
-        font.pixelSize: 13
+        font.pixelSize: Metrics.fontSecondary
     }
 
     Repeater {
         model: root.results
-        delegate: Rectangle {
+        delegate: W.ListRow {
             id: row
             required property var modelData
             required property int index
-            readonly property bool isSelected: row.index === root.selected
-            Layout.fillWidth: true
-            implicitHeight: 40
-            radius: 8
-            color: (row.isSelected || rowMa.containsMouse)
-                ? Colors.alpha(Colors.text, 0.08) : "transparent"
+
+            selected: row.index === root.selected
+            // A real app/window icon when one resolves; a generic glyph
+            // (never blank) for pad shortcuts or when lookup fails.
+            iconSource: row.modelData.iconPath
+            glyph: row.modelData.kind === "app" ? "\u{F0614}"
+                : row.modelData.kind === "window" ? "\u{F05B4}"
+                : "\u{F0493}"
+            glyphColor: Colors.alpha(Colors.text, 0.6)
+            label: row.modelData.name
+            onClicked: root.activate(row.index)
 
             // y is only final once the layout has run, so report on both
             // "I became the selection" and "I moved".
             function reportIfSelected() {
-                if (!row.isSelected)
+                if (!row.selected)
                     return
                 root.selectionY = row.y
                 root.selectionHeight = row.height
             }
-            onIsSelectedChanged: row.reportIfSelected()
+            onSelectedChanged: row.reportIfSelected()
             onYChanged: row.reportIfSelected()
             Component.onCompleted: row.reportIfSelected()
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 8
-                anchors.rightMargin: 8
-                spacing: 10
-
-                // Real app/window icon when one resolves; a generic glyph
-                // (never blank) for pad shortcuts or when lookup fails.
-                IconImage {
-                    Layout.preferredWidth: 22
-                    Layout.preferredHeight: 22
-                    visible: row.modelData.iconPath.length > 0
-                    source: row.modelData.iconPath
-                }
-                Text {
-                    visible: row.modelData.iconPath.length === 0
-                    Layout.preferredWidth: 22
-                    horizontalAlignment: Text.AlignHCenter
-                    text: row.modelData.kind === "app" ? "\u{F0614}"
-                        : row.modelData.kind === "window" ? "\u{F05B4}"
-                        : "\u{F0493}"
-                    color: Colors.alpha(Colors.text, 0.6)
-                    font.pixelSize: 18
-                }
-                Text {
-                    Layout.fillWidth: true
-                    text: row.modelData.name
-                    color: Colors.text
-                    font.pixelSize: 14
-                    elide: Text.ElideRight
-                }
-            }
-            MouseArea {
-                id: rowMa
-                anchors.fill: parent
-                hoverEnabled: true
-                onClicked: root.activate(row.index)
-            }
         }
     }
 }

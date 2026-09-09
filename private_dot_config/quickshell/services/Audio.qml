@@ -9,41 +9,59 @@ import Quickshell.Io
 // slider follow it — matching GNOME/KDE quick-settings behaviour.
 //
 // Volume/mute changes made outside this app (keyboard media keys, other
-// apps) only used to reach the widget via the 3s poll below, so the bar
-// could lag well behind what you just heard change. `pactl subscribe`
-// streams sink change events in real time, so refresh() also runs the
-// instant something else moves the volume.
+// apps) only used to reach the chip via the poll below, so the shell could
+// lag well behind what you just heard change. `pactl subscribe` streams
+// sink change events in real time, so refresh() also runs the instant
+// something else moves the volume.
+//
+// Volume and mute are both LiveSettings — see services/LiveSetting.qml for
+// the debounce/serialize/who-changed-it machinery that used to be written
+// out here by hand. Mute goes through it too rather than staying a
+// "toggle" subcommand: sending an explicit 1/0 means the write can't race
+// its own read of the current state.
 QtObject {
     id: root
 
-    property int volume: 0
-    property bool muted: false
+    readonly property int volume: level.value
+    readonly property bool muted: mute.value
     property string defaultSink: ""
     property string defaultSource: ""
-    // True while a change made through this API hasn't yet been confirmed
-    // by a real read — lets Osd.qml tell "I changed this" apart from
-    // "wpctl/another app changed this".
-    property bool uiChange: false
     // [{ name, description, index }]
     property var sinks: []
     property var sources: []
 
-    // setVolume() during a fast drag/scroll fires far more often than wpctl
-    // round-trips complete. actionProc only starts a new spawn once idle, so
-    // a rapid burst collapses to "run the first value now, then whatever's
-    // pending once that exits" — meaning a stray *second* completion for the
-    // burst's final value can land well after the calls themselves, with no
-    // further setVolume() call around to keep uiChange armed for it. Same
-    // fix as Brightness.setBrightness: assign optimistically and bracket
-    // uiChange synchronously around just that assignment, so Osd only ever
-    // has to judge a single-JS-turn change with no async gap to race. The
-    // actual wpctl call is then serialized separately (pendingVolume/
-    // applyingVolume) and, since it converges on the same value we already
-    // set, its eventual confirmation read fires no further change signal.
-    property int pendingVolume: -1
-    property bool applyingVolume: false
+    // Per-application playback streams (pactl's "sink inputs"), split in
+    // two on purpose:
+    //
+    //   streams     — identity only, [{ index, name }]
+    //   streamState — index -> { volume, muted }
+    //
+    // The mixer's Repeater binds to `streams`, so its delegates are torn
+    // down and rebuilt only when an app actually starts or stops playing.
+    // Folding the volume into that array instead would rebuild every
+    // delegate — MouseArea included — on every volume change, and since
+    // setting a stream's volume makes `pactl subscribe` fire, that means
+    // dragging a slider would destroy the very MouseArea being dragged.
+    // Same trap modules/NotificationStack.qml documents for its cards.
+    property var streams: []
+    property var streamState: ({})
+
+    // Built here rather than in the mixer so pactl stays inside this file;
+    // the mixer hands it to a LiveSetting as that value's write command.
+    function streamVolumeCommand(index, pct) {
+        return ["pactl", "set-sink-input-volume", String(index),
+            Math.max(0, Math.min(100, Math.round(pct))) + "%"]
+    }
+    function setStreamMute(index, muted) {
+        run(["pactl", "set-sink-input-mute", String(index), muted ? "1" : "0"])
+    }
+
+    // Re-exposed so Osd.qml has one signal per service to subscribe to
+    // rather than reaching into either LiveSetting itself.
+    signal changedExternally
 
     function refresh() {
+        streamsProc.running = true
         volProc.running = true
         defSinkProc.running = true
         defSourceProc.running = true
@@ -51,24 +69,10 @@ QtObject {
         sourcesProc.running = true
     }
     function setVolume(pct) {
-        const v = Math.max(0, Math.min(100, Math.round(pct)))
-        root.uiChange = true
-        root.volume = v
-        root.uiChange = false
-        root.pendingVolume = v
-        volumeDebounce.restart()
-    }
-    function applyVolume() {
-        if (root.applyingVolume || root.pendingVolume < 0)
-            return
-        root.applyingVolume = true
-        volumeSetProc.command = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", root.pendingVolume + "%"]
-        root.pendingVolume = -1
-        volumeSetProc.running = true
+        level.set(Math.max(0, Math.min(100, Math.round(pct))))
     }
     function toggleMute() {
-        root.uiChange = true
-        run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"])
+        mute.set(!root.muted)
     }
     function setDefaultSink(name) {
         run(["pactl", "set-default-sink", name])
@@ -81,16 +85,15 @@ QtObject {
         actionProc.running = true
     }
 
-    property Timer volumeDebounce: Timer {
-        interval: 60
-        onTriggered: root.applyVolume()
+    property LiveSetting level: LiveSetting {
+        value: 0
+        command: (v) => ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", v + "%"]
+        onChangedExternally: root.changedExternally()
     }
-    property Process volumeSetProc: Process {
-        onExited: {
-            root.applyingVolume = false
-            if (root.pendingVolume >= 0)
-                root.applyVolume()
-        }
+    property LiveSetting mute: LiveSetting {
+        value: false
+        command: (v) => ["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", v ? "1" : "0"]
+        onChangedExternally: root.changedExternally()
     }
 
     property Process volProc: Process {
@@ -99,9 +102,8 @@ QtObject {
             onStreamFinished: {
                 const m = text.match(/Volume:\s*([\d.]+)/)
                 if (m)
-                    root.volume = Math.round(parseFloat(m[1]) * 100)
-                root.muted = text.includes("MUTED")
-                root.uiChange = false
+                    root.level.report(Math.round(parseFloat(m[1]) * 100))
+                root.mute.report(text.includes("MUTED"))
             }
         }
     }
@@ -151,10 +153,83 @@ QtObject {
             }
         }
     }
+    // An app's own name first; media.name comes through as the literal
+    // string "(null)" for apps that don't set one, so it can't just be
+    // truthiness-tested.
+    function streamName(props) {
+        const candidates = [props["application.name"], props["media.name"],
+            props["application.process.binary"]]
+        for (const c of candidates)
+            if (c && c !== "(null)")
+                return c
+        return "Audio"
+    }
+
+    // "" when nothing resolves, which the mixer renders as a speaker glyph
+    // rather than a blank. A literal theme icon name is checked first —
+    // Quickshell.iconPath passes an unresolved name straight through, so an
+    // unchecked guess comes back looking valid and fails to load later
+    // (same trap Notifications.resolveIcon documents) — then the desktop
+    // entry heuristic, which is what matches "zen" to Zen Browser.
+    function streamIcon(props) {
+        const candidates = [props["application.icon_name"],
+            props["application.process.binary"], props["application.name"]]
+        for (const c of candidates) {
+            if (!c || c === "(null)")
+                continue
+            if (Quickshell.hasThemeIcon(c))
+                return Quickshell.iconPath(c)
+            const viaEntry = Hypr.iconForClass(c)
+            if (viaEntry)
+                return viaEntry
+        }
+        return ""
+    }
+
+    property Process streamsProc: Process {
+        command: ["pactl", "-f", "json", "list", "sink-inputs"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let list = []
+                try {
+                    list = JSON.parse(text)
+                } catch (e) {
+                    list = []
+                }
+                const ids = []
+                const state = ({})
+                for (const s of list) {
+                    const props = s.properties || ({})
+                    ids.push({
+                        index: s.index,
+                        name: root.streamName(props),
+                        icon: root.streamIcon(props)
+                    })
+                    // Volume is keyed by channel ("front-left", ...); every
+                    // channel carries the same figure for our purposes, so
+                    // read the first and drop the trailing %.
+                    const channels = s.volume ? Object.keys(s.volume) : []
+                    const pct = channels.length > 0
+                        ? parseInt(String(s.volume[channels[0]].value_percent).replace("%", ""))
+                        : 0
+                    state[s.index] = {
+                        volume: isNaN(pct) ? 0 : pct,
+                        muted: !!s.mute
+                    }
+                }
+                root.streamState = state
+                // Only reassign the identity list when it genuinely
+                // differs — see the comment on `streams` above.
+                if (JSON.stringify(ids) !== JSON.stringify(root.streams))
+                    root.streams = ids
+            }
+        }
+    }
+
     // Doesn't refresh() on exit: pactl subscribe (below) already catches
     // every change this causes — sink/mute/default-sink changes all emit a
     // "sink"-containing event, verified live. A second trigger here would
-    // just race it for no gain (see uiChange's comment above).
+    // just race it for no gain.
     property Process actionProc: Process {}
 
     // Long-running: emits a line per change (volume, mute, default sink,
@@ -171,16 +246,15 @@ QtObject {
     }
 
     // Fallback safety net in case the subscribe stream ever dies quietly.
-    // Skips while uiChange is set: firing here would call refresh() outside
-    // pactl subscribe's single trigger path and could resolve before the
-    // real completion for that change does, resetting uiChange early.
+    // Skips while a write is queued or in flight: refreshing then would
+    // only read back the value we're in the middle of replacing.
     property Timer poll: Timer {
         interval: 10000
         running: true
         repeat: true
         triggeredOnStart: true
         onTriggered: {
-            if (!root.uiChange)
+            if (!root.level.busy && !root.mute.busy)
                 root.refresh()
         }
     }

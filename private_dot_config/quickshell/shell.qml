@@ -6,6 +6,7 @@ import Quickshell.Wayland
 import "./modules"
 import "./services"
 import "./config"
+import "./modules/ui" as W
 
 ShellRoot {
     // SUPER+SPACE / SUPER+Tab (see hypr/lua/key_bindings.lua) run these via
@@ -114,8 +115,18 @@ ShellRoot {
         }
         margins.bottom: 12
         margins.right: 12
-        implicitWidth: notifContent.implicitWidth
-        implicitHeight: notifContent.implicitHeight
+
+        // A hairline of slack around the stack. The cards are content-sized
+        // and this window was sized flush to them, which made a card's 1px
+        // border the surface's outermost pixel row — confirmed by grabbing
+        // the render: its first and last rows are the same border pixel.
+        // That leaves the bottom border no tolerance at all for the
+        // compositor's edge handling (this output runs at scale 2), and it
+        // was the one going missing. Nothing here should ever be drawn
+        // against the very edge of its own surface.
+        readonly property int slack: 2
+        implicitWidth: notifContent.implicitWidth + notifWin.slack * 2
+        implicitHeight: notifContent.implicitHeight + notifWin.slack * 2
         exclusiveZone: 0
         focusable: false
         color: "transparent"
@@ -124,6 +135,8 @@ ShellRoot {
 
         NotificationStack {
             id: notifContent
+            anchors.fill: parent
+            anchors.margins: notifWin.slack
         }
     }
 
@@ -154,17 +167,13 @@ ShellRoot {
             focusable: false
             color: "transparent"
 
-            Rectangle {
+            W.Card {
                 id: osdCard
                 visible: Osd.visible
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
                 implicitWidth: osdContent.implicitWidth + 32
                 implicitHeight: osdContent.implicitHeight + 20
-                radius: 14
-                color: Colors.alpha(Colors.surface, 0.9)
-                border.width: 1
-                border.color: Colors.alpha(Colors.text, 0.08)
 
                 OsdToast {
                     id: osdContent

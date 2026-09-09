@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import "../../config"
 import "../../services"
-import "../bar/widgets" as W
+import "../ui" as W
 
 // Panel content only — the inline tab behind the overview's three ring
 // gauges (click any of them, see modules/pad/Overview.qml). One section per
@@ -44,13 +44,13 @@ ColumnLayout {
                 Layout.fillWidth: true
                 text: title
                 color: Colors.text
-                font.pixelSize: 13
+                font.pixelSize: Metrics.fontBody
                 font.bold: true
             }
             Text {
                 text: Math.round(percent) + "%"
                 color: tint
-                font.pixelSize: 13
+                font.pixelSize: Metrics.fontBody
                 font.bold: true
             }
         }
@@ -65,7 +65,7 @@ ColumnLayout {
                 height: parent.height
                 radius: 2
                 color: tint
-                Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+                Behavior on width { NumberAnimation { duration: Metrics.durationValue; easing.type: Easing.OutCubic } }
             }
         }
     }
@@ -82,13 +82,13 @@ ColumnLayout {
             Layout.fillWidth: true
             text: label
             color: Colors.alpha(Colors.text, 0.55)
-            font.pixelSize: 12
+            font.pixelSize: Metrics.fontSecondary
             elide: Text.ElideRight
         }
         Text {
             text: value
             color: Colors.text
-            font.pixelSize: 12
+            font.pixelSize: Metrics.fontSecondary
         }
     }
 

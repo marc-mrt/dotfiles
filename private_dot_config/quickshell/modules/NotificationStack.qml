@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell.Widgets
 import "../config"
 import "../services"
+import "./ui" as W
 
 // Window/positioning (bottom-right, Overlay layer) lives in shell.qml.
 // Independent of pad visibility, mirroring the existing Osd.qml split.
@@ -105,7 +106,7 @@ ColumnLayout {
 
     Repeater {
         model: root.displayGroups
-        delegate: Rectangle {
+        delegate: W.Card {
             id: card
             required property var modelData
             // Layouts exclude invisible items from sizing, so this both
@@ -118,25 +119,24 @@ ColumnLayout {
                 || root.now < card.modelData.expiresAt
             Layout.preferredWidth: Metrics.notifCardWidth
             implicitHeight: content.implicitHeight + 20
-            radius: 14
-            color: Colors.alpha(Colors.surface, 0.92)
-            // Neutral, deliberately NOT accent anymore: an accent border
-            // now means "this surface holds Hyprland's focus", which is
-            // the pad's alone (see modules/Pad.qml and shell.qml's
+            // Neutral by default, deliberately NOT accent: an accent border
+            // means "this surface holds Hyprland's focus", which is the
+            // pad's alone (see modules/Pad.qml and shell.qml's
             // HyprlandFocusGrab). Notifications never take focus — they're
-            // in the grab for clicks only — so they never wear it, apart
-            // from the blink below, where a *flash* of accent reads as
-            // "new content" rather than "focused".
-            readonly property color baseBorder: Colors.alpha(Colors.text, 0.14)
-            // Keyboard selection (Tab, while the pad is open — see
-            // services/Notifications.qml's selectedGroupId and
-            // modules/Pad.qml's keyCatcher) reuses the accent border safely:
-            // blink (below) only ever runs while the pad is closed, and
-            // selection only ever exists while it's open, so the two never
-            // compete for this property.
+            // in the grab for clicks only — so they only ever borrow it for
+            // the two cases below, where it reads as "look here" rather
+            // than "focused".
+            //
+            // Both go through W.Card's `accented`, never through
+            // border.color directly. The blink used to be a ColorAnimation
+            // driving border.color, which silently destroyed the binding
+            // that keyboard selection depends on: after a card's first
+            // blink, selecting it with Tab could never tint it again.
+            // Driving a bool that `accented` reads leaves the binding
+            // intact, so the two cues genuinely can't collide.
             readonly property bool selected: card.modelData.id === Notifications.selectedGroupId
-            border.width: 2
-            border.color: card.selected ? Colors.accent : card.baseBorder
+            property bool blinking: false
+            accented: card.selected || card.blinking
 
             // Purely visual offset layered on top of the ColumnLayout's own
             // positioning — animating x/y directly would fight the Layout
@@ -164,7 +164,7 @@ ColumnLayout {
                 property: "x"
                 from: 340
                 to: 0
-                duration: 200
+                duration: Metrics.durationNormal
                 easing.type: Easing.OutCubic
             }
 
@@ -173,8 +173,10 @@ ColumnLayout {
             SequentialAnimation {
                 id: blink
                 loops: 3
-                ColorAnimation { target: card; property: "border.color"; to: Colors.accent; duration: 250 }
-                ColorAnimation { target: card; property: "border.color"; to: card.baseBorder; duration: 250 }
+                PropertyAction { target: card; property: "blinking"; value: true }
+                PauseAnimation { duration: Metrics.durationValue }
+                PropertyAction { target: card; property: "blinking"; value: false }
+                PauseAnimation { duration: Metrics.durationValue }
             }
 
             // Swipe-away, reusing the same Translate the slide-in
@@ -195,9 +197,9 @@ ColumnLayout {
                 id: fling
                 NumberAnimation {
                     target: slideOffset; property: "x"; to: card.flingTo
-                    duration: 160; easing.type: Easing.OutCubic
+                    duration: Metrics.durationNormal; easing.type: Easing.OutCubic
                 }
-                NumberAnimation { target: card; property: "opacity"; to: 0; duration: 160 }
+                NumberAnimation { target: card; property: "opacity"; to: 0; duration: Metrics.durationNormal }
                 onFinished: Notifications.dismissGroup(card.modelData.messages)
             }
 
@@ -205,9 +207,9 @@ ColumnLayout {
                 id: settle
                 NumberAnimation {
                     target: slideOffset; property: "x"; to: 0
-                    duration: 150; easing.type: Easing.OutCubic
+                    duration: Metrics.durationNormal; easing.type: Easing.OutCubic
                 }
-                NumberAnimation { target: card; property: "opacity"; to: 1; duration: 150 }
+                NumberAnimation { target: card; property: "opacity"; to: 1; duration: Metrics.durationNormal }
             }
 
             // Whole-card gesture surface — no visible siblings intercept
@@ -289,7 +291,7 @@ ColumnLayout {
                         Layout.fillWidth: true
                         text: card.modelData.appName
                         color: Colors.text
-                        font.pixelSize: 19
+                        font.pixelSize: Metrics.fontLarge
                         font.bold: true
                         elide: Text.ElideRight
                     }
@@ -308,7 +310,7 @@ ColumnLayout {
                             Layout.alignment: Qt.AlignTop
                             text: "–"
                             color: Colors.alpha(Colors.text, 0.5)
-                            font.pixelSize: 16
+                            font.pixelSize: Metrics.fontLarge
                         }
                         // Wraps instead of eliding — the card grows taller
                         // rather than cutting content off.
@@ -320,13 +322,13 @@ ColumnLayout {
                             text: "<b>" + root.escapeHtml(msgRow.modelData.summary || card.modelData.appName) + "</b>"
                                 + (msgRow.modelData.body ? ": " + msgRow.modelData.body : "")
                             color: Colors.alpha(Colors.text, 0.85)
-                            font.pixelSize: 16
+                            font.pixelSize: Metrics.fontLarge
                         }
                         Text {
                             Layout.alignment: Qt.AlignTop
                             text: msgRow.modelData.time
                             color: Colors.alpha(Colors.text, 0.5)
-                            font.pixelSize: 13
+                            font.pixelSize: Metrics.fontBody
                         }
                     }
                 }

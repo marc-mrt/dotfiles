@@ -4,6 +4,7 @@ import Quickshell
 import "../config"
 import "../services"
 import "./pad" as PadViews
+import "./ui" as W
 
 // Pad content — a single fixed-position card floating ~30% from the top,
 // horizontally centered (window/positioning chrome lives in shell.qml).
@@ -95,7 +96,7 @@ Item {
         onClicked: PadState.close()
     }
 
-    Rectangle {
+    W.Card {
         id: card
         anchors.top: parent.top
         anchors.topMargin: parent.height * Metrics.padTopFraction
@@ -106,21 +107,31 @@ Item {
         width: root.cardWidth
         height: inner.implicitHeight + Metrics.padPaddingTop + Metrics.padPadding
         radius: Metrics.padRadius
-        color: Colors.alpha(Colors.surface, 0.9)
         // Accent border = "this surface has the compositor's focus", which
         // the pad genuinely does now (shell.qml holds a HyprlandFocusGrab
         // for as long as it's open). It's the only surface that wears it —
         // modules/NotificationStack.qml's cards used to match this for
         // looks alone and have gone neutral so the cue stays meaningful.
-        border.width: 2
-        border.color: Colors.accent
+        accented: true
+
+        // Opens with a soft pop rather than just snapping onto screen.
+        // Starts at rest (0/0.96) so the very first frame the window is
+        // mapped on already reads as "mid-animation in", not a flash of
+        // full opacity before the anim catches up. No exit fade — the
+        // window disappears the same instant PadState.shown goes false, so
+        // there's no frame left to animate through on the way out.
+        opacity: PadState.shown ? 1 : 0
+        scale: PadState.shown ? 1 : 0.96
+        transformOrigin: Item.Top
+        Behavior on opacity { NumberAnimation { duration: Metrics.durationNormal; easing.type: Metrics.easingStandard } }
+        Behavior on scale { NumberAnimation { duration: Metrics.durationNormal; easing.type: Metrics.easingStandard } }
 
         // id'd so onShownChanged above can turn these off before closing —
         // see the comment there for why. Starts disabled to match
         // PadState.shown's initial false; onShownChanged takes over toggling
         // it imperatively from the first shown change onward.
-        Behavior on width { id: widthBehavior; enabled: false; NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
-        Behavior on height { id: heightBehavior; enabled: false; NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+        Behavior on width { id: widthBehavior; enabled: false; NumberAnimation { duration: Metrics.durationNormal; easing.type: Easing.OutCubic } }
+        Behavior on height { id: heightBehavior; enabled: false; NumberAnimation { duration: Metrics.durationNormal; easing.type: Easing.OutCubic } }
 
         // Click on empty card space: step back from a drill-down panel to
         // the overview it was opened from (same gesture the old bar used to

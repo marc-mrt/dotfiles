@@ -4,9 +4,15 @@ import QtQuick
 // Transient feedback for system-critical values that can change without
 // going through Quickshell at all — media keys bound straight to wpctl in
 // Hyprland (see hypr/lua/key_bindings.lua), hypridle's own ddcutil calls,
-// any other app touching the default sink. Audio/Brightness already learn
-// about those (pactl subscribe / poll); this just flashes a toast whenever
-// their value moves, regardless of what moved it.
+// any other app touching the default sink.
+//
+// This used to read a `uiChange` flag off each service at exactly the
+// right moment and keep its own per-property "swallow the first change"
+// bookkeeping, because a startup poll syncing real state onto a default
+// looks identical to an external change when all you have is a flag. Both
+// services now say what they mean: changedExternally fires for a real
+// outside change and for nothing else, so there is nothing left here but
+// deciding what to show.
 QtObject {
     id: root
 
@@ -28,33 +34,17 @@ QtObject {
         onTriggered: root.visible = false
     }
 
-    // Each singleton's first onXChanged is just its startup poll syncing
-    // real system state into a default property value — not a change
-    // anyone made. Swallow exactly that one per property, flash every one
-    // after it.
-    property bool audioSeen: false
-    property bool brightnessSeen: false
-
     property Connections audioConn: Connections {
         target: Audio
-        function onVolumeChanged() {
-            if (root.audioSeen && !Audio.uiChange)
-                root.show("volume", Audio.volume, Audio.muted)
-            root.audioSeen = true
-        }
-        function onMutedChanged() {
-            if (root.audioSeen && !Audio.uiChange)
-                root.show("volume", Audio.volume, Audio.muted)
-            root.audioSeen = true
+        function onChangedExternally() {
+            root.show("volume", Audio.volume, Audio.muted)
         }
     }
 
     property Connections brightnessConn: Connections {
         target: Brightness
-        function onBrightnessChanged() {
-            if (root.brightnessSeen && !Brightness.uiChange)
-                root.show("brightness", Brightness.brightness, false)
-            root.brightnessSeen = true
+        function onChangedExternally() {
+            root.show("brightness", Brightness.brightness, false)
         }
     }
 }

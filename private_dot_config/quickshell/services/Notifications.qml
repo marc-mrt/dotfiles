@@ -17,7 +17,7 @@ import Quickshell.Services.Notifications
 // below) but stays in `history` for later review — opening the pad reveals
 // everything again, in order. Only clicking a card removes it from history
 // outright. dnd only changes the bell's shape
-// (bar/components/Notifications.qml) — it doesn't hide anything, same as
+// (pad/chips/Notifications.qml) — it doesn't hide anything, same as
 // dunst's pause mode never hid history either.
 QtObject {
     id: root
@@ -180,18 +180,8 @@ QtObject {
         return (s || "").toLowerCase().replace(/[^a-z0-9]/g, "")
     }
 
-    // The dispatch string is NOT the usual "focuswindow address:0x...".
-    // This Hyprland runs the Lua config parser, which routes the IPC
-    // `dispatch` command through Lua, so the flat form comes back as
-    // "')' expected near 'address'" and does nothing at all — and since
-    // the error only reaches the socket reply nobody reads, it fails
-    // completely silently. Quickshell's Toplevel.activate()
-    // (wlr-foreign-toplevel) looks like the parser-proof way out and
-    // isn't: measured here, Hyprland ignores it under the default
-    // misc:focus_on_activate = false — the request lands on the right
-    // toplevel and focus simply doesn't move. Same call, same reason, in
-    // modules/pad/Search.qml. Addresses come back from Quickshell bare;
-    // Hyprland's selectors want the 0x.
+    // Focus quirks (the Lua-parser dispatch form, the 0x prefix) live in
+    // services/Hypr.qml — this only has to work out *which* window.
     function focusApp(entry) {
         if (!entry)
             return
@@ -205,7 +195,7 @@ QtObject {
             return cls.length >= 3 && wanted.some(w => cls.includes(w) || w.includes(cls))
         })
         if (match)
-            Hyprland.dispatch('hl.dsp.focus({ window = "address:0x' + match.address + '" })')
+            Hypr.focusWindow(match.address)
     }
 
     // Clicking a card means "take me to whatever posted this", not just

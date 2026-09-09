@@ -4,9 +4,9 @@ import Quickshell
 import Quickshell.Hyprland
 import "../../config"
 import "../../services"
-import "../bar/components" as C
-import "../bar/panels" as Panels
-import "../bar/widgets" as W
+import "./chips" as C
+import "./tabs" as Tabs
+import "../ui" as W
 
 // Meta-info at a glance — every chip the old bar showed permanently, now one
 // tap/click away from expanding inline right here, rather than navigating
@@ -81,7 +81,14 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 10
 
-            C.Settings {}
+            // The one chip with no live state to render: a static gear
+            // and a tab name, so it lives here rather than in a file of
+            // its own alongside the five that actually track something.
+            W.StatusChip {
+                text: "\u{F013}"
+                active: PanelState.isInlineOpen("settings")
+                onClicked: PanelState.toggleInline("settings")
+            }
             W.MiniMetrics {
                 cpu: SystemStats.cpuPercent
                 ram: SystemStats.ramPercent
@@ -90,9 +97,9 @@ ColumnLayout {
             }
         }
 
-        // spacing: 0 — each widget already carries its own inner padding
-        // (see e.g. bar/components/Network.qml's implicitWidth), so no
-        // extra gap is needed between them.
+        // spacing: 0 — every chip already carries its own inner padding
+        // (see modules/ui/StatusChip.qml), so no extra gap is needed
+        // between them.
         RowLayout {
             id: widgetsRow
             anchors.right: parent.right
@@ -137,14 +144,14 @@ ColumnLayout {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: Qt.formatDateTime(root.now, "hh:mm")
                 color: Colors.text
-                font.pixelSize: 44
+                font.pixelSize: Metrics.fontDisplay
                 font.bold: true
             }
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: Qt.formatDateTime(root.now, "dddd, MMMM d")
                 color: Colors.alpha(Colors.text, 0.6)
-                font.pixelSize: 14
+                font.pixelSize: Metrics.fontBody
             }
         }
 
@@ -178,8 +185,13 @@ ColumnLayout {
             - topRow.implicitHeight - clockRow.implicitHeight - footerRow.implicitHeight
             - root.spacing * 3)
 
-    Rectangle {
+    // W.Card's sunken variant rather than W.Section: visually this is a
+    // section and used to be a hand-copied duplicate of one, but it holds a
+    // Flickable with an overlaid scroll track, not the plain column of
+    // controls Section wraps its children in. Same surface, own contents.
+    W.Card {
         id: expansion
+        sunken: true
         readonly property bool open: PanelState.inlineOpen !== ""
         // What the contents want, before the ceiling is applied.
         readonly property real naturalHeight:
@@ -190,10 +202,6 @@ ColumnLayout {
         // expanded — Layouts exclude invisible items from sizing.
         visible: expansion.open
         implicitHeight: Math.min(expansion.naturalHeight, root.expansionMaxHeight)
-        radius: 12
-        color: Colors.alpha(Colors.base, 0.45)
-        border.width: 1
-        border.color: Colors.alpha(Colors.text, 0.06)
 
         Flickable {
             id: expansionFlick
@@ -261,8 +269,8 @@ ColumnLayout {
                 y: scrollTrack.usableTrack > 0
                     ? expansionFlick.visibleArea.yPosition * expansionFlick.height : 0
                 height: scrollTrack.handleHeight
-                Behavior on width { NumberAnimation { duration: 100 } }
-                Behavior on color { ColorAnimation { duration: 100 } }
+                Behavior on width { NumberAnimation { duration: Metrics.durationFast } }
+                Behavior on color { ColorAnimation { duration: Metrics.durationFast } }
             }
 
             MouseArea {
@@ -321,19 +329,19 @@ ColumnLayout {
                     implicitHeight: active ? 10 : 6
                     radius: width / 2
                     color: active ? Colors.accent : Colors.alpha(Colors.text, 0.3)
-                    Behavior on implicitWidth { NumberAnimation { duration: 100 } }
-                    Behavior on implicitHeight { NumberAnimation { duration: 100 } }
+                    Behavior on implicitWidth { NumberAnimation { duration: Metrics.durationFast } }
+                    Behavior on implicitHeight { NumberAnimation { duration: Metrics.durationFast } }
                 }
             }
         }
     }
 
-    Component { id: networkComp; Panels.Network {} }
-    Component { id: bluetoothComp; Panels.Bluetooth {} }
-    Component { id: brightnessComp; Panels.Brightness {} }
-    Component { id: volumeComp; Panels.Volume {} }
+    Component { id: networkComp; Tabs.Network {} }
+    Component { id: bluetoothComp; Tabs.Bluetooth {} }
+    Component { id: brightnessComp; Tabs.Brightness {} }
+    Component { id: volumeComp; Tabs.Volume {} }
     Component { id: searchComp; Search {} }
-    Component { id: calendarComp; Panels.Calendar {} }
+    Component { id: calendarComp; Tabs.Calendar {} }
     Component { id: systemComp; SystemMetrics {} }
-    Component { id: settingsComp; Panels.Settings {} }
+    Component { id: settingsComp; Tabs.Settings {} }
 }
