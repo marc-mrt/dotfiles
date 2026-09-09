@@ -53,20 +53,28 @@ ColumnLayout {
                 }
             }
 
-            Rectangle {
+            // Hit area is much taller than the visible track, so grabbing
+            // the slider doesn't require pixel-precise aim at an 8px bar.
+            Item {
                 id: track
                 Layout.fillWidth: true
-                implicitHeight: 8
-                radius: 4
-                color: Colors.base
+                implicitHeight: 24
 
                 Rectangle {
-                    width: parent.width * (Audio.volume / 100)
-                    height: parent.height
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width
+                    height: 8
                     radius: 4
-                    color: Audio.muted
-                        ? Colors.alpha(Colors.text, 0.3)
-                        : Colors.accent
+                    color: Colors.base
+
+                    Rectangle {
+                        width: parent.width * (Audio.volume / 100)
+                        height: parent.height
+                        radius: 4
+                        color: Audio.muted
+                            ? Colors.alpha(Colors.text, 0.3)
+                            : Colors.accent
+                    }
                 }
                 // Grows on hover/drag: the handle is the grabbable
                 // part, so it's what has to look grabbable. Anchored on
