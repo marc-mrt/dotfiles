@@ -14,6 +14,7 @@ QtObject {
     id: root
 
     readonly property int brightness: level.value
+    readonly property bool synced: level.synced
     property bool available: true
 
     // Re-exposed so Osd.qml has one signal per service to subscribe to

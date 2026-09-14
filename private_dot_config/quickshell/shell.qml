@@ -9,6 +9,12 @@ import "./config"
 import "./modules/ui" as W
 
 ShellRoot {
+    // A QML singleton only exists once something references it, and nothing
+    // in the UI reads HyprOverrides — it is write-only, keeping the
+    // generated hypr lua file in step with the sliders. Naming it here is
+    // what brings it (and Mouse, which it watches) to life at startup.
+    readonly property var hyprOverrides: HyprOverrides
+
     // SUPER+SPACE / SUPER+Tab (see hypr/lua/key_bindings.lua) run these via
     // `qs ipc call pad ...` without needing a dedicated global-shortcut
     // protocol. toggleOverview opens straight to the meta-info overview
