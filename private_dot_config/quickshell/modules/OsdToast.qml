@@ -42,7 +42,7 @@ RowLayout {
         text: root.muted ? "Muted" : (Osd.value + "%")
         color: Colors.text
         font.pixelSize: Metrics.fontSecondary
-        Layout.preferredWidth: 40
+        Layout.preferredWidth: 48
         horizontalAlignment: Text.AlignRight
     }
 }

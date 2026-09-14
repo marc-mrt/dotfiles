@@ -3,7 +3,7 @@ import QtQuick
 
 // Shared layout constants needed by more than one top-level window.
 QtObject {
-    readonly property int chipHeight: 34
+    readonly property int chipHeight: 41
 
     // Pad — floating card, positioned by modules/Pad.qml.
     readonly property int padWidth: 576
@@ -37,7 +37,7 @@ QtObject {
     readonly property real switcherTopFraction: 0.12
     readonly property int switcherCanvasWidth: 560
     readonly property int switcherCanvasHeight: 340
-    readonly property int switcherFooterHeight: 28
+    readonly property int switcherFooterHeight: 34
     readonly property int switcherTileRadius: 10
     // Small inset between adjacent window tiles within one workspace —
     // cosmetic breathing room, not a reflection of Hyprland's real gaps_in.
@@ -71,11 +71,11 @@ QtObject {
     // the search list ended up at 18px for the same kind of row label that
     // every tab renders at 17. Named by role, so a new label picks a
     // meaning rather than a number.
-    readonly property int fontSmall: 13      // uppercase section captions, chevrons
-    readonly property int fontSecondary: 15  // status under a label, readouts, placeholders
-    readonly property int fontBody: 17       // labels, list rows, menu entries — the default
-    readonly property int fontLarge: 20      // notification app name and message text
-    readonly property int fontDisplay: 50    // the pad clock, and nothing else
+    readonly property int fontSmall: 16      // uppercase section captions, chevrons
+    readonly property int fontSecondary: 18  // status under a label, readouts, placeholders
+    readonly property int fontBody: 20       // labels, list rows, menu entries — the default
+    readonly property int fontLarge: 24      // notification app name and message text
+    readonly property int fontDisplay: 60    // the pad clock, and nothing else
 
     // Shared spacing for a tab's own layout. The eighteen tokens that
     // used to sit here — panelRow*, panelSectionLabel*, slider* — are gone:
@@ -90,6 +90,6 @@ QtObject {
     readonly property int panelSectionListSpacing: 4 // spacing between rows inside a W.Section list
 
     // Icon-button glyph/backing — see modules/ui/IconButton.qml
-    readonly property int iconButtonGlyphSize: 22
-    readonly property int iconButtonSize: 34
+    readonly property int iconButtonGlyphSize: 26
+    readonly property int iconButtonSize: 41
 }

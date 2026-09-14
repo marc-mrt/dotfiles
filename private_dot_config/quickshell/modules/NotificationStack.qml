@@ -284,7 +284,7 @@ ColumnLayout {
 
                     IconImage {
                         visible: !!card.modelData.appIcon
-                        implicitSize: 18
+                        implicitSize: 22
                         source: card.modelData.appIcon ?? ""
                     }
                     Text {
