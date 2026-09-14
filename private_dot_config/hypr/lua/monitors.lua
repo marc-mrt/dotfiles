@@ -1,10 +1,9 @@
--- hl.monitor("", "preferred,auto,1")
-
+-- Empty output = catch-all: matches whatever port the display enumerates as.
+-- highrr picks the highest refresh rate the display advertises.
 hl.monitor({
-    output   = "DP-2",
-    mode     = "3840x2160@239.99Hz",
+    output   = "",
+    mode     = "highrr",
     position = "auto",
     scale    = 1.25,
     vrr      = false,
 })
-
