@@ -1,5 +1,5 @@
 import QtQuick
-import "../../../config"
+import "../../config"
 
 // Capsule-shaped bar widget background — noctalia gives each bar module a
 // pill rather than a bare icon sitting directly on the bar surface. Hover
@@ -16,5 +16,5 @@ Rectangle {
             ? Colors.alpha(Colors.text, 0.08)
             : "transparent"
 
-    Behavior on color { ColorAnimation { duration: 120 } }
+    Behavior on color { ColorAnimation { duration: Metrics.durationFast } }
 }

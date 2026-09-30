@@ -74,7 +74,7 @@ QtObject {
     readonly property int fontSmall: 16      // uppercase section captions, chevrons
     readonly property int fontSecondary: 18  // status under a label, readouts, placeholders
     readonly property int fontBody: 20       // labels, list rows, menu entries — the default
-    readonly property int fontLarge: 24      // notification app name and message text
+    readonly property int fontLarge: 19      // notification app name and message text
     readonly property int fontDisplay: 60    // the pad clock, and nothing else
 
     // Shared spacing for a tab's own layout. The eighteen tokens that

@@ -1,0 +1,13 @@
+background      = {{bg0_argb}}
+base            = {{bg1_argb}}
+alternate_base  = {{bg0_argb}}
+text            = {{fg_argb}}
+bright_text     = 0xFFFFFFFF
+accent          = {{accent_argb}}
+accent_secondary = {{secondary_argb}}
+font_size       = 13
+h1_size         = 19
+h2_size         = 15
+h3_size         = 13
+small_font_size = 11
+icon_theme = Papirus-Dark

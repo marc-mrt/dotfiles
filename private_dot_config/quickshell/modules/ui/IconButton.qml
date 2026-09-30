@@ -1,5 +1,5 @@
 import QtQuick
-import "../../../config"
+import "../../config"
 
 // Small square icon button — a glyph on a hover-tinted rounded backing.
 // The network and bluetooth rescan buttons were each hand-rolling this, and
@@ -11,8 +11,11 @@ Item {
     id: root
 
     property string glyph: ""
-    property int glyphSize: 16
-    property int size: 26
+    // Dimmed by callers that use this as a toggle — a muted speaker reads
+    // as off rather than merely as a different glyph.
+    property color glyphColor: Colors.text
+    property int glyphSize: Metrics.iconButtonGlyphSize
+    property int size: Metrics.iconButtonSize
     signal clicked
 
     implicitWidth: root.size
@@ -32,13 +35,15 @@ Item {
         anchors.fill: parent
         radius: 8
         color: ma.containsMouse ? Colors.alpha(Colors.text, 0.1) : "transparent"
-        Behavior on color { ColorAnimation { duration: 120 } }
+        Behavior on color { ColorAnimation { duration: Metrics.durationFast } }
     }
 
     Text {
         anchors.centerIn: parent
         text: root.glyph
-        color: Colors.text
+        color: root.glyphColor
         font.pixelSize: root.glyphSize
+        scale: ma.pressed ? 0.88 : 1
+        Behavior on scale { NumberAnimation { duration: Metrics.durationFast; easing.type: Metrics.easingStandard } }
     }
 }

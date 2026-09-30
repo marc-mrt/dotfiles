@@ -1,5 +1,5 @@
 import QtQuick
-import "../../../config"
+import "../../config"
 
 // Small iOS-style switch. Emits toggled(); the parent owns the state.
 //
@@ -19,7 +19,7 @@ Rectangle {
     color: root.checked
         ? (ma.containsMouse ? Qt.lighter(Colors.accent, 1.25) : Colors.accent)
         : Colors.alpha(Colors.text, ma.containsMouse ? 0.32 : 0.2)
-    Behavior on color { ColorAnimation { duration: 120 } }
+    Behavior on color { ColorAnimation { duration: Metrics.durationFast } }
 
     MouseArea {
         id: ma
@@ -37,7 +37,7 @@ Rectangle {
         x: root.checked ? root.width - width - 3 : 3
         border.width: ma.containsMouse ? 2 : 0
         border.color: Colors.alpha(Colors.text, 0.35)
-        Behavior on x { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
-        Behavior on border.width { NumberAnimation { duration: 120 } }
+        Behavior on x { NumberAnimation { duration: Metrics.durationFast; easing.type: Easing.OutCubic } }
+        Behavior on border.width { NumberAnimation { duration: Metrics.durationFast } }
     }
 }

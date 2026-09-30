@@ -34,6 +34,7 @@ README.md
 
 # AI
 **/.claude/
+.config/quickshell/CONTEXT.md
 
 # User space
 **/.luarc.json

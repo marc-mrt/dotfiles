@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import "../../../config"
-import "../widgets" as W
+import "../../ui" as W
 
 // Panel content only — month grid with today highlighted. Chrome (the
 // expansion's background, radius and padding) lives in
@@ -62,10 +62,10 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.maximumWidth: root.gridWidth
         Layout.alignment: Qt.AlignHCenter
+        spacing: Metrics.panelHeaderSpacing
 
         W.IconButton {
             glyph: "\u{F0141}"
-            glyphSize: 18
             onClicked: root.shiftMonth(-1)
         }
         Text {
@@ -73,12 +73,11 @@ ColumnLayout {
             horizontalAlignment: Text.AlignHCenter
             text: Qt.formatDate(new Date(root.viewYear, root.viewMonth, 1), "MMMM yyyy")
             color: Colors.text
-            font.pixelSize: 15
+            font.pixelSize: Metrics.fontBody
             font.bold: true
         }
         W.IconButton {
             glyph: "\u{F0142}"
-            glyphSize: 18
             onClicked: root.shiftMonth(1)
         }
     }
@@ -98,7 +97,7 @@ ColumnLayout {
                 horizontalAlignment: Text.AlignHCenter
                 text: modelData
                 color: Colors.alpha(Colors.text, 0.5)
-                font.pixelSize: 11
+                font.pixelSize: Metrics.fontSecondary
             }
         }
 
@@ -107,14 +106,14 @@ ColumnLayout {
             Rectangle {
                 required property var modelData
                 Layout.fillWidth: true
-                Layout.preferredHeight: 26
-                radius: 13
+                Layout.preferredHeight: 31
+                radius: 16
                 color: root.isToday(modelData) ? Colors.accent : "transparent"
 
                 Text {
                     anchors.centerIn: parent
                     text: modelData.getDate()
-                    font.pixelSize: 13
+                    font.pixelSize: Metrics.fontBody
                     color: root.isToday(modelData)
                         ? Colors.base
                         : root.isCurrentMonth(modelData)

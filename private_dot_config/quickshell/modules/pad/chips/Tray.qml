@@ -4,10 +4,10 @@ import Quickshell
 import Quickshell.Widgets
 import Quickshell.Services.SystemTray
 import "../../../config"
-import "../widgets" as W
+import "../../ui" as W
 
 // Tray icons — pilled and hover-tooltipped to match every other overview
-// widget (see W.IconPill usage in bar/components/Network.qml etc.), rather
+// widget (see W.IconPill usage in pad/chips/Network.qml etc.), rather
 // than bare icons floating with no feedback.
 RowLayout {
     id: root
@@ -23,13 +23,13 @@ RowLayout {
             id: trayItem
             required property var modelData
             // nm-applet's tray icon duplicates the pad's own Network widget
-            // (bar/components/Network.qml) — hide it rather than showing
+            // (pad/chips/Network.qml) — hide it rather than showing
             // the same status twice.
             readonly property bool isNmApplet: (trayItem.modelData.id ?? "").toLowerCase().includes("nm-applet")
 
             visible: !trayItem.isNmApplet
-            implicitWidth: 26
-            implicitHeight: 26
+            implicitWidth: 31
+            implicitHeight: 31
 
             W.IconPill {
                 anchors.fill: parent
@@ -39,7 +39,7 @@ RowLayout {
             IconImage {
                 anchors.centerIn: parent
                 source: trayItem.modelData.icon
-                implicitSize: 16
+                implicitSize: 19
             }
 
             MouseArea {
