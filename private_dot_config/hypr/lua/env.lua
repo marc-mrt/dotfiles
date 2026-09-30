@@ -21,7 +21,7 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -- Fallback for XCURSOR
 hl.env("XCURSOR_THEME", "catppuccin-latte-light-cursors")
 hl.env("XCURSOR_SIZE", "24")
-hl.env("XCURSOR_PATH", "/home/marc/.local/share/icons:/usr/share/icons")
+hl.env("XCURSOR_PATH", os.getenv("HOME") .. "/.local/share/icons:/usr/share/icons")
 
 -- XDG
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
