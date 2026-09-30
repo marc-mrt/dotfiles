@@ -1,0 +1,6 @@
+system:
+  game_path: /media/games-drive/
+wine:
+  # Lutris writes LogPixels on every launch; without this it forces 96 (GDK reports integer scale 1 at 1.25)
+  Dpi: true
+  ExplicitDpi: '120'

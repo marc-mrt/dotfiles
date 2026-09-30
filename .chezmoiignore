@@ -55,4 +55,8 @@ README.md
 .var/**
 .local/share/wallpapers
 .local/share/wallpapers/**
+.local/share/flatpak
+.local/share/flatpak/**
+.local/share/icons
+.local/share/icons/**
 {{ end -}}

@@ -1,0 +1,10 @@
+# Cursor theme for Hyprland (hyprcursor) and X11/XWayland (xcursor).
+# Fetched from upstream instead of copied: the release zip stores its cursor
+# aliases (left_ptr, arrow, hand2, ...) as symlinks, and a flattened copy breaks
+# the arrow in XWayland apps (Steam, Wine). Linux-only via .chezmoiignore.
+[".local/share/icons/catppuccin-latte-light-cursors"]
+    type = "archive"
+    url = "https://github.com/catppuccin/cursors/releases/download/v2.0.0/catppuccin-latte-light-cursors.zip"
+    checksum.sha256 = "4c0752cfa2da6c4cbcfe9539ca92585144b34651f22acf6cecf18850cb938880"
+    stripComponents = 1
+    exact = true

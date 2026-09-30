@@ -1,0 +1,10 @@
+[Context]
+filesystems=/media/games-drive;
+sockets=wayland;
+filesystems=!xdg-run/wayland-1;
+unset-environment=STEAM_FORCE_DESKTOPUI_SCALING;
+
+[Environment]
+SDL_VIDEODRIVER=wayland
+STEAM_FORCE_DESKTOPUI_SCALING=
+GDK_BACKEND=wayland,x11
