@@ -85,6 +85,10 @@ require('mini.bracketed').setup()
 -- Fuzzy picker. Keymaps live in keymaps.lua.
 require('mini.pick').setup()
 
+-- Route every "choose one of these" prompt (LSP code actions via `gra`,
+-- vim.ui.select callers in general) through the same picker UI.
+vim.ui.select = MiniPick.ui_select
+
 -- Extra pickers (diagnostics, LSP symbols, git files, old files) that plug
 -- into mini.pick.
 require('mini.extra').setup()

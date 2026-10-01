@@ -13,8 +13,8 @@
 --
 
 local map = function(mode, lhs, rhs, desc, opts)
-  opts = vim.tbl_extend('force', { silent = true, desc = desc }, opts or {})
-  vim.keymap.set(mode, lhs, rhs, opts)
+    opts = vim.tbl_extend('force', { silent = true, desc = desc }, opts or {})
+    vim.keymap.set(mode, lhs, rhs, opts)
 end
 
 -- ── Basics ──────────────────────────────────────────────────────────────────
@@ -44,7 +44,8 @@ map('x', 'p', 'P', 'Paste without yanking replaced text')
 map('n', '<leader><leader>', function() MiniPick.builtin.buffers() end, 'Switch buffer')
 map('n', '<leader>ff', function() MiniPick.builtin.files() end, 'Find files')
 map('n', '<leader>fg', function() MiniPick.builtin.grep_live() end, 'Grep (live)')
-map('n', '<leader>fw', function() MiniPick.builtin.grep({ pattern = vim.fn.expand('<cword>') }) end, 'Grep word under cursor')
+map('n', '<leader>fw', function() MiniPick.builtin.grep({ pattern = vim.fn.expand('<cword>') }) end,
+    'Grep word under cursor')
 map('n', '<leader>fh', function() MiniPick.builtin.help() end, 'Help tags')
 map('n', '<leader>fb', function() MiniPick.builtin.buffers() end, 'Buffers')
 map('n', '<leader>fr', function() MiniExtra.pickers.oldfiles() end, 'Recent files')
@@ -57,7 +58,7 @@ map('n', '<leader>fG', function() MiniExtra.pickers.git_files() end, 'Git-tracke
 -- usually what you want when you're already editing something.
 map('n', '<leader>e', function() MiniFiles.open() end, 'Explorer (cwd)')
 map('n', '<leader>E', function()
-  MiniFiles.open(vim.api.nvim_buf_get_name(0), true)
+    MiniFiles.open(vim.api.nvim_buf_get_name(0), true)
 end, 'Explorer (current file)')
 
 -- ── LSP (<leader>l) ─────────────────────────────────────────────────────────
@@ -92,20 +93,20 @@ map('n', '<leader>bp', '<cmd>bprevious<cr>', 'Previous buffer')
 -- ── Toggles (<leader>u) ─────────────────────────────────────────────────────
 
 map('n', '<leader>uf', function()
-  vim.g.disable_autoformat = not vim.g.disable_autoformat
-  vim.notify('Autoformat ' .. (vim.g.disable_autoformat and 'disabled' or 'enabled'))
+    vim.g.disable_autoformat = not vim.g.disable_autoformat
+    vim.notify('Autoformat ' .. (vim.g.disable_autoformat and 'disabled' or 'enabled'))
 end, 'Toggle autoformat')
 
 map('n', '<leader>uw', function()
-  vim.opt.wrap = not vim.opt.wrap:get()
+    vim.opt.wrap = not vim.opt.wrap:get()
 end, 'Toggle wrap')
 
 map('n', '<leader>us', function()
-  vim.opt.spell = not vim.opt.spell:get()
+    vim.opt.spell = not vim.opt.spell:get()
 end, 'Toggle spellcheck')
 
 map('n', '<leader>ud', function()
-  local enabled = vim.diagnostic.is_enabled()
-  vim.diagnostic.enable(not enabled)
-  vim.notify('Diagnostics ' .. (enabled and 'disabled' or 'enabled'))
+    local enabled = vim.diagnostic.is_enabled()
+    vim.diagnostic.enable(not enabled)
+    vim.notify('Diagnostics ' .. (enabled and 'disabled' or 'enabled'))
 end, 'Toggle diagnostics')
