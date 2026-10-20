@@ -1,0 +1,4 @@
+#!/bin/sh
+# Reruns whenever chef's checked-out commit changes.
+# chef HEAD: {{ $chef := joinPath .chezmoi.homeDir "Code/chef" }}{{ if stat (joinPath $chef ".git") }}{{ output "git" "-C" $chef "rev-parse" "HEAD" | trim }}{{ end }}
+exec "$HOME/Code/chef/install"
