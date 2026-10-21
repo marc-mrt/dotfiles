@@ -1,0 +1,69 @@
+{{- if eq .profile "work" -}}
+[identity]
+github_user = "marc-mrt"
+
+[github]
+repos = ["deepset-ai"]          # owner/repo, or a bare owner for the whole org
+# `c` (gh pr checkout) and `W` / `a` (worktrees) look repos up here: owner/repo → local checkout.
+repo_paths = { "deepset-ai/ai-review-tooling" = "~/Code/ai-review-tooling", "deepset-ai/dc-docs" = "~/Code/dc-docs", "deepset-ai/dc-environment-configuration" = "~/Code/dc-environment-configuration", "deepset-ai/dc-jobs" = "~/Code/dc-jobs", "deepset-ai/dc-pipeline-images" = "~/Code/dc-pipeline-images", "deepset-ai/dc-pipeline-operator" = "~/Code/dc-pipeline-operator", "deepset-ai/dc-pipeline-templates" = "~/Code/dc-pipeline-templates", "deepset-ai/dc-terraform-live" = "~/Code/dc-terraform-live", "deepset-ai/deepset-cloud-custom-nodes" = "~/Code/deepset-cloud-custom-nodes", "deepset-ai/hayhooks" = "~/Code/hayhooks", "deepset-ai/haystack-enterprise-sdk" = "~/Code/haystack-enterprise-sdk", "deepset-ai/haystack-experimental" = "~/Code/haystack-experimental", "deepset-ai/haystack-hub-api" = "~/Code/haystack-hub-api", "deepset-ai/haystack-hub-ui" = "~/Code/haystack-hub-ui", "deepset-ai/haystack-runtime" = "~/Code/haystack-runtime", "deepset-ai/haystack-worker-gateway" = "~/Code/haystack-worker-gateway", "deepset-ai/haystack" = "~/Code/haystack", "deepset-ai/kosmos" = "~/Code/kosmos", "deepset-ai/marvin" = "~/Code/marvin", "deepset-ai/hep" = "~/Code/hep" }
+
+[workspaces]
+# Typed into the shell of a new worktree, after `mise trust && mise install` when the repo has a
+# mise file (copied over when untracked). Derived from dev-worktree-toolkit's detect.sh.
+# No entry: dc-environment-configuration, dc-terraform-live (no manifest), marvin (no lockfile).
+[workspaces.setup]
+ai-review-tooling = "mise exec -- pnpm install --frozen-lockfile"
+dc-docs = "npm ci"
+dc-jobs = "uv sync"
+dc-pipeline-images = "hatch env create"
+dc-pipeline-operator = "uv sync"          # `make dev` would create a kind cluster, not install deps
+dc-pipeline-templates = "uv venv && uv pip install -r requirements-test.txt"
+deepset-cloud-custom-nodes = "uv sync"
+hayhooks = "hatch env create"
+haystack-enterprise-sdk = "uv sync --all-extras"
+haystack-experimental = "mise exec -- hatch env create"
+haystack-hub-api = "uv sync"
+haystack-hub-ui = "mise exec -- yarn install --frozen-lockfile"   # yarn 1.22 (packageManager)
+haystack-runtime = "uv sync"
+haystack-worker-gateway = "uv sync --all-extras"
+haystack = "mise exec -- hatch env create"   # uv.lock is untracked; hatch is the project's tool
+kosmos = "uv sync"
+
+[work]
+run = "regarde-run claude '/chef'"   # typed, without Enter, into new milestone and project shells
+
+[[shortcuts]]
+name = "linear"
+when = ["issue", "no_pr", "no_agent"]
+run = "regarde-run claude '/chef {issue_url}'"
+
+[[shortcuts]]
+name = "babysit"
+when = ["pr"]
+run = "regarde-run claude '/chef {pr_url}'"
+{{ else -}}
+tracker = "github"
+
+[identity]
+github_user = "marc-mrt"
+
+[github]
+repos = ["marc-mrt"]
+repo_paths = { "marc-mrt/chef" = "~/Code/chef", "marc-mrt/regarde" = "~/Code/regarde" }
+
+[agents]
+default_harness = "opencode"
+
+[work]
+run = "regarde-run opencode --prompt '/chef'"   # typed, without Enter, into new milestone and project shells
+
+[[shortcuts]]
+name = "issue"
+when = ["issue", "no_pr", "no_agent"]
+run = "regarde-run opencode --prompt '/chef {issue_url}'"
+
+[[shortcuts]]
+name = "babysit"
+when = ["pr"]
+run = "regarde-run opencode --prompt '/chef {pr_url}'"
+{{ end -}}
