@@ -1,2 +1,1 @@
-{{- $m := dict "work" "github-copilot/claude-haiku-4.5" "home" "neuralwatt/deepseek-v4.1-flash" -}}
-{{- template "opencode-cook.md" dict "profile" .profile "tier" "trivial" "job" "renames, config, copy, one-line fixes." "model" (get $m .profile) "effort" (eq .profile "home" | ternary "low" "") -}}
+{{- template "opencode-cook.md" dict "tier" "trivial" "job" "renames, config, copy, one-line fixes." "model" "neuralwatt/deepseek-v4.1-flash" "effort" "low" -}}

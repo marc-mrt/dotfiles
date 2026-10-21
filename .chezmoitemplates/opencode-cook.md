@@ -16,10 +16,6 @@ permission:
     "gh issue comment*": deny
     "git push --force*": deny
     "git push -f*": deny
-{{- if eq .profile "work" }}
-  linear_save_comment: deny
-  linear_save_issue: deny
-{{- end }}
 ---
 
 Read `~/.agents/skills/chef/cook.md` and follow it. It is your whole brief.

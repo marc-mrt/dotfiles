@@ -67,3 +67,10 @@ README.md
 .local/share/icons
 .local/share/icons/**
 {{ end -}}
+
+{{ if ne .profile "home" -}}
+# chef's opencode brigade is home-only: work cooks are Claude Code subagents,
+# and the work Copilot taster defines its agent inline.
+.config/opencode/agents
+.config/opencode/agents/**
+{{ end -}}

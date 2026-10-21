@@ -28,19 +28,8 @@
       "gh issue comment*": "ask",
       "git push --force*": "ask",
       "git push -f*": "ask"
-    }{{ if eq .profile "work" }},
-    "linear_save_comment": "ask",
-    "linear_save_issue": "ask"{{ end }}
-  }{{ if eq .profile "work" }},
-
-  // Linear for gather-issue-context. Authorize once with `opencode mcp auth linear`.
-  "mcp": {
-    "linear": {
-      "type": "remote",
-      "url": "https://mcp.linear.app/mcp",
-      "enabled": true
     }
-  }{{ end }}{{ if eq .profile "home" }},
+  }{{ if eq .profile "home" }},
 
   // NeuralWatt open models, picked from /v1/models in chef M5. Concrete ids, not
   // the nw-* tracking aliases, so a model change shows in a diff.
