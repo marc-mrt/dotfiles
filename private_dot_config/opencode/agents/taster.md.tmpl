@@ -1,0 +1,2 @@
+{{- $m := dict "work" "github-copilot/claude-opus-5.5" "home" "neuralwatt/kimi-k3" -}}
+{{- template "opencode-taster.md" dict "alt" false "model" (get $m .profile) -}}

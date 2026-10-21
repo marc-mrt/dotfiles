@@ -1,0 +1,92 @@
+{{- $vendor := joinPath .chezmoi.homeDir ".config/opencode/vendor" -}}
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // The always-on layer, from the checkouts in .chezmoiexternal.toml. caveman's
+  // plugin only reinforces each turn; its ruleset comes through `instructions`.
+  // regarde's plugin sits in plugins/ and loads on its own.
+  "plugin": [
+    "{{ $vendor }}/caveman/src/plugins/opencode",
+    "{{ $vendor }}/ponytail/.opencode/plugins/ponytail.mjs",
+    "{{ $vendor }}/i-have-adhd/.opencode/plugins/i-have-adhd.js"
+  ],
+  // opencode doesn't follow CLAUDE.md's @AGENTS.md import, so AGENTS.md is listed too.
+  "instructions": [
+    "{{ .chezmoi.homeDir }}/.agents/AGENTS.md",
+    "{{ .chezmoi.homeDir }}/.claude/CLAUDE.md",
+    "{{ $vendor }}/caveman/src/rules/caveman-activate.md"
+  ],
+
+  // chef's always-pause list (chef SPEC §5.3). Cooks deny the same in their agent files.
+  "permission": {
+    "bash": {
+      "*": "allow",
+      "gh pr merge*": "ask",
+      "gh pr ready*": "ask",
+      "gh pr comment*": "ask",
+      "gh pr review*": "ask",
+      "gh issue comment*": "ask",
+      "git push --force*": "ask",
+      "git push -f*": "ask"
+    }{{ if eq .profile "work" }},
+    "linear_save_comment": "ask",
+    "linear_save_issue": "ask"{{ end }}
+  }{{ if eq .profile "work" }},
+
+  // Linear for gather-issue-context. Authorize once with `opencode mcp auth linear`.
+  "mcp": {
+    "linear": {
+      "type": "remote",
+      "url": "https://mcp.linear.app/mcp",
+      "enabled": true
+    }
+  }{{ end }}{{ if eq .profile "home" }},
+
+  // NeuralWatt open models, picked from /v1/models in chef M5. Concrete ids, not
+  // the nw-* tracking aliases, so a model change shows in a diff.
+  "model": "neuralwatt/kimi-k3",
+  "small_model": "neuralwatt/deepseek-v4.1-flash",
+  "provider": {
+    "neuralwatt": {
+      "name": "NeuralWatt",
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "https://api.neuralwatt.com/v1",
+        "apiKey": "{env:NEURALWATT_API_KEY}"
+      },
+      // Output limits marked "guess" are null in /v1/models.
+      "models": {
+        "kimi-k3": {
+          "name": "Kimi K3",
+          "tool_call": true,
+          "reasoning": true,
+          "limit": { "context": 1048560, "output": 65536 }, // output: guess
+          "options": { "reasoningEffort": "high" } // default is max
+        },
+        "glm-5.3": {
+          "name": "GLM 5.3",
+          "tool_call": true,
+          "reasoning": true,
+          "limit": { "context": 1048560, "output": 65536 }, // output: guess
+          "options": { "reasoningEffort": "high" } // default is max
+        },
+        "deepseek-v4.1-flash": {
+          "name": "DeepSeek V4.1 Flash",
+          "tool_call": true,
+          "reasoning": true,
+          "limit": { "context": 1048560, "output": 393216 }
+        },
+        "mimo-v2.6-pro": {
+          "name": "MiMo V2.6 Pro",
+          "tool_call": true,
+          "reasoning": true,
+          "limit": { "context": 1048560, "output": 393216 }
+        }
+      }
+    }
+  },
+  // chef's runner (spawn-runner) is the built-in explore agent.
+  "agent": {
+    "explore": { "model": "neuralwatt/deepseek-v4.1-flash" }
+  }{{ end }}
+}

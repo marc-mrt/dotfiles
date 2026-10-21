@@ -1,0 +1,4 @@
+{{- /* work: Linear, Claude Code, Copilot. home: GitHub issues, opencode, NeuralWatt. */ -}}
+{{- $profile := promptChoiceOnce . "profile" "Machine profile" (list "work" "home") -}}
+[data]
+    profile = {{ $profile | quote }}

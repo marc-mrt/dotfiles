@@ -1,0 +1,2 @@
+{{- $m := dict "work" "github-copilot/claude-sonnet-5" "home" "neuralwatt/glm-5.3" -}}
+{{- template "opencode-cook.md" dict "profile" .profile "tier" "normal" "job" "a bug fix or a feature slice with a clear spec." "model" (get $m .profile) "effort" "" -}}

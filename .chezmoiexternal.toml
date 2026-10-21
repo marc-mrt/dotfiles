@@ -16,3 +16,23 @@
     type = "git-repo"
     url = "https://github.com/marc-mrt/chef.git"
     refreshPeriod = "168h"
+
+# opencode's always-on layer, loaded by path from opencode.jsonc. caveman and
+# i-have-adhd are not on npm; all three come the same way so nothing is copied.
+[".config/opencode/vendor/caveman"]
+    type = "git-repo"
+    url = "https://github.com/JuliusBrussee/caveman.git"
+    refreshPeriod = "168h"
+    clone.args = ["--depth", "1"]
+
+[".config/opencode/vendor/ponytail"]
+    type = "git-repo"
+    url = "https://github.com/DietrichGebert/ponytail.git"
+    refreshPeriod = "168h"
+    clone.args = ["--depth", "1"]
+
+[".config/opencode/vendor/i-have-adhd"]
+    type = "git-repo"
+    url = "https://github.com/ayghri/i-have-adhd.git"
+    refreshPeriod = "168h"
+    clone.args = ["--depth", "1"]
