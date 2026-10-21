@@ -33,7 +33,13 @@ README.md
 .Xresources
 
 # AI
-**/.claude/
+# Project-local .claude dirs at any depth; ~/.claude itself is managed
+# file by file (CLAUDE.md, AGENTS.md), never wholesale.
+*/**/.claude
+*/**/.claude/**
+.claude/*
+!.claude/CLAUDE.md
+!.claude/AGENTS.md
 .config/quickshell/CONTEXT.md
 
 # User space

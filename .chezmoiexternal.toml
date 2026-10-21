@@ -8,3 +8,11 @@
     checksum.sha256 = "4c0752cfa2da6c4cbcfe9539ca92585144b34651f22acf6cecf18850cb938880"
     stripComponents = 1
     exact = true
+
+# chef, Marc's agent stack. A private repo: a new machine needs
+# `gh auth login && gh auth setup-git` before the first apply.
+# chef owns its symlinks; run_onchange_after_chef-install runs its installer.
+["Code/chef"]
+    type = "git-repo"
+    url = "https://github.com/marc-mrt/chef.git"
+    refreshPeriod = "168h"
