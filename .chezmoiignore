@@ -42,6 +42,12 @@ README.md
 !.claude/AGENTS.md
 .config/quickshell/CONTEXT.md
 
+# Machine-specific, never in this public repo: regarde's config (repos, trackers),
+# and opencode's system layer (providers, models, MCP servers, agent models),
+# which lives outside $HOME in /etc/opencode or /Library/Application Support/opencode.
+.config/regarde
+.config/regarde/**
+
 # User space
 **/.luarc.json
 
