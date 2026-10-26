@@ -6,6 +6,7 @@ local -a plugins=(
     marlonrichert/zsh-autocomplete
     marlonrichert/zsh-edit
     marlonrichert/zsh-hist
+    marlonrichert/zcolors
     zsh-users/zsh-autosuggestions
     zsh-users/zsh-syntax-highlighting
 )
@@ -17,4 +18,4 @@ for p in $plugins; do
   znap source $p
 done
 
-znap eval zcolors '~[zcolors]/zcolors'  # Colors for completions, git, less and grep
+znap eval zcolors zcolors   # Extra init code needed for zcolors.

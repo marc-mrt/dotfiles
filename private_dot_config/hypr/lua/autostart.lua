@@ -7,5 +7,6 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd("hyprpaper")
     hl.exec_cmd("qs -c ~/.config/quickshell")
     hl.exec_cmd("~/.config/hypr/theme/apply-theme.sh")
+    hl.exec_cmd("udiskie")
 end)
 
