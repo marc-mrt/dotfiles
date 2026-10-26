@@ -5,8 +5,8 @@ import "../../services"
 import "../ui" as W
 
 // Panel content only — the inline tab behind the overview's three ring
-// gauges (click any of them, see modules/pad/Overview.qml). One section per
-// ring, in the same order, each leading with the same percentage its ring
+// gauges (click any of them, see modules/pad/Overview.qml). One page per
+// ring (a PageBar switches them), in the same order, each leading with the same percentage its ring
 // shows in the same escalating color (Colors.loadColor), so what you clicked
 // and what you're now reading are visibly the same measurement.
 //
@@ -93,73 +93,83 @@ ColumnLayout {
     }
 
     W.Section {
-        spacing: 3
-        Header { title: "CPU"; percent: SystemStats.cpuPercent }
-        Row {
-            label: "Clock"
-            value: Math.round(SystemStats.cpuFreqMhz) + " MHz"
-            visible: SystemStats.cpuFreqMhz > 0
-        }
-        Row {
-            label: "Temperature"
-            value: SystemStats.cpuTempC.toFixed(1) + " °C"
-            visible: SystemStats.cpuTempC > 0
-        }
-        Row {
-            label: "Load (1/5/15m)"
-            value: SystemStats.loadAvg
-            visible: SystemStats.loadAvg !== ""
-        }
-    }
+        W.PageBar { id: pages; model: ["CPU", "Memory", "GPU"] }
 
-    W.Section {
-        spacing: 3
-        Header { title: "Memory"; percent: SystemStats.ramPercent }
-        Row {
-            label: "Used"
-            value: root.formatKb(SystemStats.ramUsedKb) + " / " + root.formatKb(SystemStats.ramTotalKb)
-            visible: SystemStats.ramTotalKb > 0
+        ColumnLayout {
+            visible: pages.current === 0
+            Layout.fillWidth: true
+            spacing: 3
+            Header { title: "CPU"; percent: SystemStats.cpuPercent }
+            Row {
+                label: "Clock"
+                value: Math.round(SystemStats.cpuFreqMhz) + " MHz"
+                visible: SystemStats.cpuFreqMhz > 0
+            }
+            Row {
+                label: "Temperature"
+                value: SystemStats.cpuTempC.toFixed(1) + " °C"
+                visible: SystemStats.cpuTempC > 0
+            }
+            Row {
+                label: "Load (1/5/15m)"
+                value: SystemStats.loadAvg
+                visible: SystemStats.loadAvg !== ""
+            }
         }
-        Row {
-            label: "Available"
-            value: root.formatKb(SystemStats.ramAvailableKb)
-            visible: SystemStats.ramTotalKb > 0
-        }
-        Row {
-            label: "Swap"
-            value: SystemStats.swapUsedKb > 0
-                ? root.formatKb(SystemStats.swapUsedKb) + " / " + root.formatKb(SystemStats.swapTotalKb)
-                : "unused (" + root.formatKb(SystemStats.swapTotalKb) + ")"
-            visible: SystemStats.swapTotalKb > 0
-        }
-    }
 
-    W.Section {
-        spacing: 3
-        // The ring tracks VRAM, so that stays the headline here too; the
-        // core's own busy figure is a row rather than a second competing
-        // number in the heading.
-        Header { title: "GPU"; percent: SystemStats.vramPercent }
-        Row {
-            label: "VRAM"
-            value: root.formatBytes(SystemStats.vramUsedBytes)
-                + " / " + root.formatBytes(SystemStats.vramTotalBytes)
-            visible: SystemStats.vramTotalBytes > 0
+        ColumnLayout {
+            visible: pages.current === 1
+            Layout.fillWidth: true
+            spacing: 3
+            Header { title: "Memory"; percent: SystemStats.ramPercent }
+            Row {
+                label: "Used"
+                value: root.formatKb(SystemStats.ramUsedKb) + " / " + root.formatKb(SystemStats.ramTotalKb)
+                visible: SystemStats.ramTotalKb > 0
+            }
+            Row {
+                label: "Available"
+                value: root.formatKb(SystemStats.ramAvailableKb)
+                visible: SystemStats.ramTotalKb > 0
+            }
+            Row {
+                label: "Swap"
+                value: SystemStats.swapUsedKb > 0
+                    ? root.formatKb(SystemStats.swapUsedKb) + " / " + root.formatKb(SystemStats.swapTotalKb)
+                    : "unused (" + root.formatKb(SystemStats.swapTotalKb) + ")"
+                visible: SystemStats.swapTotalKb > 0
+            }
         }
-        Row {
-            label: "Temperature"
-            value: SystemStats.gpuTempC.toFixed(1) + " °C"
-            visible: SystemStats.gpuTempC > 0
-        }
-        Row {
-            label: "Power draw"
-            value: SystemStats.gpuPowerW.toFixed(1) + " W"
-            visible: SystemStats.gpuPowerW > 0
-        }
-        Row {
-            label: "Fan speed"
-            value: Math.round(SystemStats.gpuFanRpm) + " RPM"
-            visible: SystemStats.gpuFanRpm > 0
+
+        ColumnLayout {
+            visible: pages.current === 2
+            Layout.fillWidth: true
+            spacing: 3
+            // The ring tracks VRAM, so that stays the headline here too; the
+            // core's own busy figure is a row rather than a second competing
+            // number in the heading.
+            Header { title: "GPU"; percent: SystemStats.vramPercent }
+            Row {
+                label: "VRAM"
+                value: root.formatBytes(SystemStats.vramUsedBytes)
+                    + " / " + root.formatBytes(SystemStats.vramTotalBytes)
+                visible: SystemStats.vramTotalBytes > 0
+            }
+            Row {
+                label: "Temperature"
+                value: SystemStats.gpuTempC.toFixed(1) + " °C"
+                visible: SystemStats.gpuTempC > 0
+            }
+            Row {
+                label: "Power draw"
+                value: SystemStats.gpuPowerW.toFixed(1) + " W"
+                visible: SystemStats.gpuPowerW > 0
+            }
+            Row {
+                label: "Fan speed"
+                value: Math.round(SystemStats.gpuFanRpm) + " RPM"
+                visible: SystemStats.gpuFanRpm > 0
+            }
         }
     }
 }

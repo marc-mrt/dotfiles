@@ -37,6 +37,8 @@ Rectangle {
     property color glyphColor: Colors.text
 
     property string label: ""
+    // Active rows tint their label with the glyph.
+    property color labelColor: Colors.text
 
     property string status: ""
     property color statusColor: Colors.alpha(Colors.text, 0.5)
@@ -114,17 +116,21 @@ Rectangle {
                 id: labelText
                 width: Math.min(implicitWidth, textFlow.width)
                 text: root.label
-                color: Colors.text
+                color: root.labelColor
                 font.pixelSize: Metrics.fontBody
                 elide: Text.ElideRight
+                Behavior on color { ColorAnimation { duration: Metrics.durationFast } }
             }
             Text {
+                id: statusText
                 visible: root.status !== "" || root.statusHover !== ""
                 width: Math.min(implicitWidth, textFlow.width)
-                // Matched to the label's line box so the smaller status
-                // text sits on its line rather than riding high against it.
+                // Baseline-aligned with the label, so the pair reads as one
+                // line of mixed sizes rather than two centred ones. Height
+                // stays the label's line box; the padding pushes the smaller
+                // text down until its baseline meets the label's.
                 height: labelText.height
-                verticalAlignment: Text.AlignVCenter
+                topPadding: labelText.baselineOffset - statusMetrics.ascent
                 text: (ma.containsMouse && root.statusHover !== "")
                     ? root.statusHover : root.status
                 color: (ma.containsMouse && root.statusHover !== "")
@@ -132,6 +138,7 @@ Rectangle {
                 font.pixelSize: Metrics.fontSecondary
                 elide: Text.ElideRight
                 Behavior on color { ColorAnimation { duration: Metrics.durationFast } }
+                FontMetrics { id: statusMetrics; font: statusText.font }
             }
         }
 

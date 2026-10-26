@@ -20,12 +20,21 @@ Item {
 
     property string text: ""
     property bool active: false
+    // A toggle that is off but keeps its glyph: dims the label, no pill.
+    property bool dimmed: false
+    // For an on/off glyph pair sharing a base shape but not ink width: centring the advance pins the shared shape so only the overflow (e.g. a slash) changes.
+    property bool centreOnAdvance: false
 
     signal clicked
     signal middleClicked
     signal scrolled(int steps)
 
-    implicitWidth: label.implicitWidth + 20
+    // Nerd Font glyphs share an advance width but their ink boxes differ, so
+    // label.implicitWidth would move with each icon swap and shift the row.
+    // Floor at the font size so icon-only chips stay constant; text chips
+    // are wider than that and still size to their content.
+    // ponytail: an icon wider than fontBody would still shift the row; raise the floor or measure per glyph if one appears.
+    implicitWidth: Math.max(label.implicitWidth, Metrics.fontBody) + 20
     implicitHeight: Metrics.chipHeight
 
     IconPill {
@@ -36,11 +45,19 @@ Item {
         hovered: ma.containsMouse
     }
 
+    // Advance width of the current glyph, used only by centreOnAdvance.
+    TextMetrics {
+        id: ink
+        font: label.font
+        text: root.text
+    }
+
     Text {
         id: label
         anchors.centerIn: parent
+        anchors.horizontalCenterOffset: root.centreOnAdvance ? (label.implicitWidth - ink.advanceWidth) / 2 : 0
         text: root.text
-        color: Colors.text
+        color: root.dimmed ? Colors.alpha(Colors.text, 0.4) : Colors.text
         font.pixelSize: Metrics.fontBody
     }
 

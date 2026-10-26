@@ -109,7 +109,6 @@ ColumnLayout {
             C.Bluetooth {}
             C.Brightness {}
             C.Volume {}
-            C.Notifications {}
         }
     }
 
@@ -290,14 +289,16 @@ ColumnLayout {
         }
     }
 
-    // Bottom row — tray (left), workspace dots (center). Tray's corner is a
-    // placement guess (nothing was specified for it) rather than a settled
-    // call — say if you want it elsewhere. Plain Item for the same
-    // anchors-vs-Layout reason as the rows above.
+    // Bottom row — tray (left), workspace dots (center), the two state
+    // toggles, caffeine and DND (right). Tray's corner is a placement guess
+    // (nothing was specified for it) rather than a settled call — say if you
+    // want it elsewhere. Plain Item for the same anchors-vs-Layout reason as
+    // the rows above.
     Item {
         id: footerRow
         Layout.fillWidth: true
-        implicitHeight: Math.max(trayRow.implicitHeight, dotsRow.implicitHeight)
+        implicitHeight: Math.max(trayRow.implicitHeight, dotsRow.implicitHeight,
+            togglesRow.implicitHeight)
 
         RowLayout {
             id: trayRow
@@ -306,18 +307,26 @@ ColumnLayout {
             C.Tray {}
         }
 
-        // One dot per configured workspace (SUPER+1..0 in
-        // hypr/lua/key_bindings.lua binds exactly 10), not per workspace
-        // that happens to have windows open — a fixed strip like the old
-        // bar's, just dots instead of numbered pills. No app icons, just
-        // which one is currently active.
+        RowLayout {
+            id: togglesRow
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 0
+            C.Caffeine {}
+            C.Notifications {}
+        }
+
+        // Fixed strip of 4 dots (the ones actually used), growing to cover
+        // any higher workspace that exists (SUPER+5..0 still bind up to 10
+        // in hypr/lua/key_bindings.lua). No app icons, just which one is
+        // currently active.
         RowLayout {
             id: dotsRow
             anchors.centerIn: parent
             spacing: 6
 
             Repeater {
-                model: 10
+                model: Math.max(4, ...Hyprland.workspaces.values.map(w => w.id))
                 Rectangle {
                     id: dot
                     required property int index

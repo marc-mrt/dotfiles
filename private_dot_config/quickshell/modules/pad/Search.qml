@@ -122,11 +122,9 @@ ColumnLayout {
         }
     }
 
-    Text {
+    W.EmptyRow {
         visible: root.results.length === 0
         text: "No matches"
-        color: Colors.alpha(Colors.text, 0.5)
-        font.pixelSize: Metrics.fontSecondary
     }
 
     Repeater {

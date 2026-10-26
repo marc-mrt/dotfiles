@@ -11,6 +11,7 @@ W.StatusChip {
 
     text: (Bluetooth.powered ? "\u{F00AF}" : "\u{F00B2}")
         + (root.connectedCount > 0 ? " " + root.connectedCount : "")
+    centreOnAdvance: true
     active: PanelState.isInlineOpen("bluetooth")
     onClicked: PanelState.toggleInline("bluetooth")
 }

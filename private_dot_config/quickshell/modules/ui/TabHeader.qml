@@ -7,16 +7,17 @@ import "../../config"
 // laid out after the title). Five tabs each wrote out the same
 // bold-17-with-a-2px-margin Text; this is that, named.
 //
-// Bluetooth's header deliberately doesn't use this — it carries a leading
-// back button and switches its own title between two sub-views, which is
-// genuinely different chrome rather than the same chrome with a different
-// string. Calendar's is centered between two month arrows, likewise.
+// Calendar's header is the one exception — it is centered between two month
+// arrows, which is different chrome rather than a different string.
 RowLayout {
     property string title: ""
 
     Layout.fillWidth: true
     Layout.bottomMargin: 2
     Layout.leftMargin: 2
+    // Same height as a header carrying an IconButton (Bluetooth's scan),
+    // so the title-to-section gap matches across tabs.
+    Layout.minimumHeight: Metrics.iconButtonSize
     spacing: Metrics.panelHeaderSpacing
 
     Text {

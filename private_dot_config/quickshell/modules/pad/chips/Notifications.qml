@@ -4,10 +4,9 @@ import "../../../services"
 import "../../ui" as W
 
 // A DND toggle and nothing else — history lives at the bottom-right of the
-// screen (modules/NotificationStack.qml), not behind this glyph. The only
-// chip whose `active` isn't a tab selection.
+// screen (modules/NotificationStack.qml), not behind this glyph. State shows
+// in the glyph only: no `active`, so no accent pill.
 W.StatusChip {
-    text: Notifications.dnd ? "\u{F1F6}" : "\u{F0F3}"
-    active: Notifications.dnd
+    text: Notifications.dnd ? "\u{F009B}" : "\u{F009A}"
     onClicked: Notifications.toggleDnd()
 }
