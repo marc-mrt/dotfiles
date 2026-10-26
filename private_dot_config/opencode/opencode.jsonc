@@ -13,6 +13,9 @@
     "~/.config/opencode/vendor/caveman/src/rules/caveman-activate.md"
   ],
 
+  // todowrite is off by default in opencode 2; chef's plan reaches regarde through it.
+  "experimental": { "todo": true },
+
   // chef's always-pause list. Cooks deny the same in their agent files.
   "permissions": [
     { "action": "shell", "resource": "gh pr merge *", "effect": "ask" },
