@@ -16,4 +16,5 @@ chezmoi init --apply marc-mrt/dotfiles
 This repo holds only what every machine shares. Anything that differs per machine stays on the machine:
 
 - opencode's providers, default model, MCP servers and per-agent models go in the system config, which opencode merges over `~/.config/opencode/opencode.jsonc`: `/etc/opencode/opencode.json` on Linux, `/Library/Application Support/opencode/opencode.json` on macOS. Set an agent's model with `"agents": { "cook-hard": { "model": "provider/model" } }`.
+- opencode's agent files (`cook-*.md`, `taster*.md`) are owned by chef, not this repo. Chef's install links them into `~/.config/opencode/agents`, so chezmoi never manages that directory.
 - regarde's `~/.config/regarde/config.toml` is ignored here.
