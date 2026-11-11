@@ -299,36 +299,50 @@ ColumnLayout {
 
                 Repeater {
                     model: card.modelData.messages
-                    delegate: RowLayout {
+                    delegate: ColumnLayout {
                         id: msgRow
                         required property var modelData
                         Layout.fillWidth: true
-                        spacing: 6
+                        spacing: 2
 
-                        Text {
-                            visible: card.modelData.messages.length > 1
-                            Layout.alignment: Qt.AlignTop
-                            text: "–"
-                            color: Colors.alpha(Colors.text, 0.5)
-                            font.pixelSize: Metrics.fontLarge
-                        }
-                        // Wraps instead of eliding — the card grows taller
-                        // rather than cutting content off.
-                        Text {
+                        RowLayout {
                             Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignTop
-                            textFormat: Text.RichText
-                            wrapMode: Text.Wrap
-                            text: "<b>" + root.escapeHtml(msgRow.modelData.summary || card.modelData.appName) + "</b>"
-                                + (msgRow.modelData.body ? ": " + msgRow.modelData.body : "")
-                            color: Colors.alpha(Colors.text, 0.85)
-                            font.pixelSize: Metrics.fontLarge
+                            spacing: 6
+
+                            Text {
+                                visible: card.modelData.messages.length > 1
+                                Layout.alignment: Qt.AlignTop
+                                text: "–"
+                                color: Colors.alpha(Colors.text, 0.5)
+                                font.pixelSize: Metrics.fontLarge
+                            }
+                            // Wraps instead of eliding — the card grows taller
+                            // rather than cutting content off.
+                            Text {
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignTop
+                                textFormat: Text.RichText
+                                wrapMode: Text.Wrap
+                                text: "<b>" + root.escapeHtml(msgRow.modelData.summary || card.modelData.appName) + "</b>"
+                                    + (msgRow.modelData.body ? ": " + msgRow.modelData.body : "")
+                                color: Colors.alpha(Colors.text, 0.85)
+                                font.pixelSize: Metrics.fontLarge
+                            }
+                            Text {
+                                Layout.alignment: Qt.AlignTop
+                                text: msgRow.modelData.time
+                                color: Colors.alpha(Colors.text, 0.5)
+                                font.pixelSize: Metrics.fontBody
+                            }
                         }
-                        Text {
-                            Layout.alignment: Qt.AlignTop
-                            text: msgRow.modelData.time
-                            color: Colors.alpha(Colors.text, 0.5)
-                            font.pixelSize: Metrics.fontBody
+
+                        // Only for a live notification — see
+                        // Notifications.actionsOf.
+                        Repeater {
+                            model: Notifications.actionsOf(msgRow.modelData)
+                            delegate: W.MenuEntry {
+                                Layout.fillWidth: true
+                            }
                         }
                     }
                 }

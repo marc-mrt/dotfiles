@@ -234,6 +234,56 @@ QtObject {
         root.dismissGroup(messages)
     }
 
+    // Card buttons for a message's non-default actions. "default" is
+    // excluded because clicking the card already invokes it
+    // (activateGroup). Shaped as the plain object modules/ui/MenuEntry
+    // reads (text/enabled/icon/...) so the card can reuse that primitive
+    // instead of growing its own button. Returns [] unless the live
+    // notification object still exists: reading .actions off one the
+    // server already closed throws (same guard as safeDismiss), and an
+    // action on a dead notification can't be invoked anyway.
+    function actionsOf(entry) {
+        const out = []
+        if (!entry.notification)
+            return out
+        try {
+            for (const action of entry.notification.actions) {
+                if (action.identifier === "default")
+                    continue
+                out.push({
+                    text: action.text,
+                    enabled: true,
+                    icon: "",
+                    isSeparator: false,
+                    hasChildren: false,
+                    triggered: () => root.invokeAction(entry, action.identifier)
+                })
+            }
+        } catch (e) {
+            // already closed — no buttons
+        }
+        return out
+    }
+
+    // Invoke by identifier, looked up again at click time rather than
+    // holding the NotificationAction from actionsOf: the notification may
+    // have closed in between, in which case invoking is moot. Removes just
+    // this message (not its whole group) — the button answered it, the
+    // neighbours are still unread — via the same dismissGroup() a click uses.
+    function invokeAction(entry, identifier) {
+        try {
+            for (const action of entry.notification.actions) {
+                if (action.identifier === identifier) {
+                    action.invoke()
+                    break
+                }
+            }
+        } catch (e) {
+            // already closed — nothing to invoke
+        }
+        root.dismissGroup([entry])
+    }
+
     function dismissAll() {
         for (const row of root.history)
             if (row.notification)
