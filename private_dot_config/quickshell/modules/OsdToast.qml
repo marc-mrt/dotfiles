@@ -10,11 +10,14 @@ RowLayout {
     spacing: 10
 
     readonly property bool isVolume: Osd.kind === "volume"
+    readonly property bool isMic: Osd.kind === "mic"
     readonly property bool muted: root.isVolume && Osd.muted
     readonly property real frac: root.muted ? 0 : Osd.value / 100
 
     Text {
-        text: root.isVolume
+        text: root.isMic
+            ? (Osd.muted ? "\u{F036D}" : "\u{F036C}")
+            : root.isVolume
             ? (root.muted ? "\u{F075F}" : "\u{F057E}")
             : "\u{2600}"
         color: Colors.text
@@ -23,6 +26,8 @@ RowLayout {
 
     Rectangle {
         id: track
+        // A mic toggle has no level to show.
+        visible: !root.isMic
         Layout.preferredWidth: 140
         implicitHeight: 8
         radius: 4
@@ -39,10 +44,12 @@ RowLayout {
     }
 
     Text {
-        text: root.muted ? "Muted" : (Osd.value + "%")
+        text: root.isMic
+            ? (Osd.muted ? "Mic muted" : "Mic on")
+            : root.muted ? "Muted" : (Osd.value + "%")
         color: Colors.text
         font.pixelSize: Metrics.fontSecondary
-        Layout.preferredWidth: 48
+        Layout.preferredWidth: root.isMic ? -1 : 48
         horizontalAlignment: Text.AlignRight
     }
 }

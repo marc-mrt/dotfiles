@@ -17,7 +17,7 @@ QtObject {
     id: root
 
     property bool visible: false
-    property string kind: "" // "volume" | "brightness"
+    property string kind: "" // "volume" | "brightness" | "mic"
     property int value: 0
     property bool muted: false
 
@@ -38,6 +38,14 @@ QtObject {
         target: Audio
         function onChangedExternally() {
             root.show("volume", Audio.volume, Audio.muted)
+        }
+    }
+
+    property Connections micConn: Connections {
+        target: Audio
+        function onSourceChangedExternally() {
+            // `muted` carries the mic state; value is unused for this kind.
+            root.show("mic", 0, Audio.sourceMuted)
         }
     }
 

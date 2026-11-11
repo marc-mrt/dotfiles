@@ -24,6 +24,7 @@ QtObject {
 
     readonly property int volume: level.value
     readonly property bool muted: mute.value
+    readonly property bool sourceMuted: sourceMute.value
     property string defaultSink: ""
     property string defaultSource: ""
     // [{ name, description, index }]
@@ -59,10 +60,14 @@ QtObject {
     // Re-exposed so Osd.qml has one signal per service to subscribe to
     // rather than reaching into either LiveSetting itself.
     signal changedExternally
+    // Separate from changedExternally: Osd needs to know *which* thing moved
+    // to pick the glyph, and the sink's signal carries no such information.
+    signal sourceChangedExternally
 
     function refresh() {
         streamsProc.running = true
         volProc.running = true
+        sourceMuteProc.running = true
         defSinkProc.running = true
         defSourceProc.running = true
         sinksProc.running = true
@@ -94,6 +99,24 @@ QtObject {
         value: false
         command: (v) => ["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", v ? "1" : "0"]
         onChangedExternally: root.changedExternally()
+    }
+
+    // The mic-mute key is bound straight to wpctl in Hyprland, so nothing in
+    // the shell ever writes this: no command, it only reports. LiveSetting
+    // still earns its keep by swallowing the startup read.
+    property LiveSetting sourceMute: LiveSetting {
+        value: false
+        onChangedExternally: root.sourceChangedExternally()
+    }
+
+    property Process sourceMuteProc: Process {
+        command: ["wpctl", "get-volume", "@DEFAULT_AUDIO_SOURCE@"]
+        stdout: StdioCollector {
+            // No match = no default source (empty output); don't report
+            // that as "unmuted".
+            onStreamFinished: if (text.includes("Volume:"))
+                root.sourceMute.report(text.includes("MUTED"))
+        }
     }
 
     property Process volProc: Process {
