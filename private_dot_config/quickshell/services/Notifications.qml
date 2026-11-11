@@ -338,6 +338,10 @@ QtObject {
                 appIcon: root.resolveIcon(notification),
                 summary: notification.summary,
                 body: notification.body,
+                // Copied now, like the other fields: the entry has to
+                // render after the notification object is gone. May be
+                // empty (most notifications carry no image).
+                image: notification.image,
                 time: Qt.formatDateTime(new Date(), "hh:mm"),
                 receivedAtMs: Date.now()
             }
