@@ -39,6 +39,10 @@ assert.deepEqual(q("fire", [app("Backfire"), app("Firefox")]), ["Firefox", "Back
 const kw = app("Zathura", { keywords: ["pdf", "viewer"] })
 assert.deepEqual(q("pdf", [kw, app("Firefox")]), ["Zathura"])
 
+// alt name (window class) matches like a name
+assert.equal(score("firefox", { name: "GitHub - Home", alt: "firefox" }), 1000)
+assert.equal(score("firefox", { name: "GitHub - Home", alt: "kitty" }), 0)
+
 // ties: launch count, then alphabetical
 assert.deepEqual(q("e", [app("Beta"), app("Alpha e"), app("Gamma e")], { "Gamma e": 5 }).slice(0, 1), ["Gamma e"])
 assert.deepEqual(q("ap", [app("Apple", { id: "b" }), app("Apricot", { id: "a" })], { b: 3 }), ["Apple", "Apricot"])
