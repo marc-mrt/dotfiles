@@ -23,44 +23,9 @@ QtObject {
     id: root
 
     readonly property int historyLimit: 20
-
-    // history/dnd/nextId survive a hot reload (any config edit) by living in
-    // a PersistentProperties, which Quickshell carries from the old
-    // instance to the new one by reloadableId. history holds plain data
-    // only — never the Notification objects themselves: those are QObjects
-    // the server can delete at any moment, and a deleted one stored in
-    // persisted state would dangle across the reload. They live in `live`
-    // below instead, which is rebuilt after a reload (see onNotification).
-    PersistentProperties {
-        id: store
-        reloadableId: "notifications"
-        property var history: []
-        property bool dnd: false
-        property int nextId: 0
-    }
-    property alias history: store.history
-    property alias dnd: store.dnd
-    property alias nextId: store.nextId
-
-    // entry id -> its Notification, for as long as the server still has it.
-    // An entry with no live notification (closed, or from before a reload
-    // that didn't re-deliver it) is still a perfectly good history row —
-    // it just has no action buttons and a click only removes it. Not
-    // reactive; anything that has to re-render when this changes reassigns
-    // `history` (see attach()).
-    property var live: ({})
-
-    function attach(entry, notification) {
-        root.live[entry.id] = notification
-        // Dropping the reference when the server closes it is what makes
-        // actionsOf() stop offering buttons that can't work. This is NOT
-        // the "removed from history" hook the onNotification comment
-        // rules out — history is left alone, only the buttons go.
-        notification.closed.connect(() => {
-            delete root.live[entry.id]
-            root.history = root.history.slice()
-        })
-    }
+    property var history: []
+    property bool dnd: false
+    property int nextId: 0
 
     // Keyboard-driven selection while the pad is open (Tab/Shift+Tab to
     // move, Enter to activate, Backspace/Delete to dismiss — see
@@ -198,8 +163,8 @@ QtObject {
     // the only removal path — no per-message dismiss anymore.
     function dismissGroup(messages) {
         for (const entry of messages)
-            if (root.live[entry.id])
-                root.safeDismiss(root.live[entry.id])
+            if (entry.notification)
+                root.safeDismiss(entry.notification)
         const ids = new Set(messages.map(m => m.id))
         root.history = root.history.filter(row => !ids.has(row.id))
     }
@@ -253,9 +218,9 @@ QtObject {
     // aimed at (groups are built newest-first, see `groups` above).
     function activateGroup(messages) {
         const newest = messages[0]
-        if (newest && root.live[newest.id]) {
+        if (newest && newest.notification) {
             try {
-                for (const action of root.live[newest.id].actions) {
+                for (const action of newest.notification.actions) {
                     if (action.identifier === "default") {
                         action.invoke()
                         break
@@ -279,11 +244,10 @@ QtObject {
     // action on a dead notification can't be invoked anyway.
     function actionsOf(entry) {
         const out = []
-        const notification = root.live[entry.id]
-        if (!notification)
+        if (!entry.notification)
             return out
         try {
-            for (const action of notification.actions) {
+            for (const action of entry.notification.actions) {
                 if (action.identifier === "default")
                     continue
                 out.push({
@@ -308,7 +272,7 @@ QtObject {
     // neighbours are still unread — via the same dismissGroup() a click uses.
     function invokeAction(entry, identifier) {
         try {
-            for (const action of root.live[entry.id].actions) {
+            for (const action of entry.notification.actions) {
                 if (action.identifier === identifier) {
                     action.invoke()
                     break
@@ -322,8 +286,8 @@ QtObject {
 
     function dismissAll() {
         for (const row of root.history)
-            if (root.live[row.id])
-                root.safeDismiss(root.live[row.id])
+            if (row.notification)
+                root.safeDismiss(row.notification)
         root.history = []
     }
 
@@ -356,13 +320,7 @@ QtObject {
     }
 
     property NotificationServer server: NotificationServer {
-        // true (also the default) is what lets live notifications — and so
-        // their action buttons — survive a reload. It was false because a
-        // kept server re-emits every still-tracked notification through
-        // onNotification afterwards, which used to mean duplicates of what
-        // history already held; onNotification now recognises those
-        // (lastGeneration) and re-attaches instead of re-adding.
-        keepOnReload: true
+        keepOnReload: false
         actionsSupported: true
         imageSupported: true
         bodySupported: true
@@ -372,25 +330,9 @@ QtObject {
         onNotification: notification => {
             notification.tracked = true
 
-            // Re-delivery of one we already hold, after a reload: hand it
-            // its entry back (by the server's own id — our entry ids
-            // don't mean anything to it) rather than adding a duplicate.
-            // One with no entry was already out of history (trimmed past
-            // historyLimit) — nothing to show, so let it go.
-            if (notification.lastGeneration) {
-                const known = root.history.find(r => r.dbusId === notification.id)
-                if (known) {
-                    root.attach(known, notification)
-                    root.history = root.history.slice()
-                } else {
-                    root.safeDismiss(notification)
-                }
-                return
-            }
-
             const entry = {
                 id: root.nextId++,
-                dbusId: notification.id,
+                notification: notification,
                 appName: notification.appName,
                 groupKey: notification.desktopEntry || notification.appName,
                 appIcon: root.resolveIcon(notification),
@@ -411,7 +353,6 @@ QtObject {
             // you dismiss it yourself" requirement, auto-expiry must only
             // affect the corner's display (NotificationStack.qml's
             // expiresAt-based view filter), never the underlying data.
-            root.attach(entry, notification)
             root.history = [entry, ...root.history].slice(0, root.historyLimit)
         }
     }
