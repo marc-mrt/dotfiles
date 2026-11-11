@@ -89,6 +89,11 @@ ColumnLayout {
                 active: PanelState.isInlineOpen("settings")
                 onClicked: PanelState.toggleInline("settings")
             }
+            W.StatusChip {
+                text: "\u{F0425}"
+                active: PanelState.isInlineOpen("power")
+                onClicked: PanelState.toggleInline("power")
+            }
             W.MiniMetrics {
                 cpu: SystemStats.cpuPercent
                 ram: SystemStats.ramPercent
@@ -235,6 +240,7 @@ ColumnLayout {
                     : PanelState.inlineOpen === "calendar" ? calendarComp
                     : PanelState.inlineOpen === "system" ? systemComp
                     : PanelState.inlineOpen === "settings" ? settingsComp
+                    : PanelState.inlineOpen === "power" ? powerComp
                     : null
             }
         }
@@ -356,4 +362,5 @@ ColumnLayout {
     Component { id: calendarComp; Tabs.Calendar {} }
     Component { id: systemComp; SystemMetrics {} }
     Component { id: settingsComp; Tabs.Settings {} }
+    Component { id: powerComp; Tabs.Power {} }
 }
