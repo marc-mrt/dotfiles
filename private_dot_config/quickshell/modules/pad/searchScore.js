@@ -15,8 +15,13 @@ function isSubsequence(q, s) {
     return i === q.length
 }
 
-// item: { name, generic?, keywords? (array or string) } -> 0 means no match.
+// item: { name, generic?, keywords? (array or string), alt? } -> 0 means no
+// match. `alt` is a second name scored the same way as `name` (a window's
+// class next to its title); the better of the two wins.
 function score(query, item) {
+    if (item.alt)
+        return Math.max(score(query, { name: item.name, generic: item.generic, keywords: item.keywords }),
+                        score(query, { name: item.alt }))
     const q = query.trim().toLowerCase()
     const name = (item.name || "").toLowerCase()
     if (!q) return 1
