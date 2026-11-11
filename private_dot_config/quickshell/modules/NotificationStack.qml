@@ -316,6 +316,28 @@ ColumnLayout {
                                 color: Colors.alpha(Colors.text, 0.5)
                                 font.pixelSize: Metrics.fontLarge
                             }
+                            // Fixed thumbnail, not a full-width preview — keeps
+                            // a screenshot notification from towering over its
+                            // text. Hidden until the pixels actually load (the
+                            // image URL can outlive its source), so a dead
+                            // image leaves no empty frame; the header's app
+                            // icon is the only icon either way.
+                            ClippingRectangle {
+                                visible: !!msgRow.modelData.image && thumb.status === Image.Ready
+                                Layout.alignment: Qt.AlignTop
+                                implicitWidth: 48
+                                implicitHeight: 48
+                                radius: 8
+                                color: "transparent"
+
+                                Image {
+                                    id: thumb
+                                    anchors.fill: parent
+                                    source: msgRow.modelData.image ?? ""
+                                    fillMode: Image.PreserveAspectCrop
+                                    asynchronous: true
+                                }
+                            }
                             // Wraps instead of eliding — the card grows taller
                             // rather than cutting content off.
                             Text {
