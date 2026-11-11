@@ -15,7 +15,8 @@ ColumnLayout {
     // UUID of the saved network whose password row is open ("" = none).
     property string pskRowUuid: ""
 
-    Component.onCompleted: Network.refresh()
+    // Rescan on open: the polled list reads the cache only, so refresh follows the scan.
+    Component.onCompleted: Network.rescan()
     // The revealed password shouldn't outlive the tab that asked for it.
     Component.onDestruction: Network.revealed = ({ uuid: "", psk: "" })
 

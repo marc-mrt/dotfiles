@@ -29,6 +29,11 @@ QtObject {
         ethernetProc.running = true
         knownProc.running = true
     }
+    // Active scan, then a list refresh when nmcli exits. Its error (e.g.
+    // "Scanning not allowed while unavailable") is ignored, the refresh still runs.
+    function rescan() {
+        rescanProc.running = true
+    }
     function toggleWifi() {
         run(["nmcli", "radio", "wifi", wifiEnabled ? "off" : "on"])
     }
@@ -108,6 +113,13 @@ QtObject {
         root.busy = true
         actionProc.command = cmd
         actionProc.running = true
+    }
+
+    // The periodic list is --rescan no (cache only), so a freshly opened tab
+    // would show a stale list; this scan runs once per open instead.
+    property Process rescanProc: Process {
+        command: ["nmcli", "dev", "wifi", "rescan"]
+        onExited: root.refresh()
     }
 
     property Process radioProc: Process {
