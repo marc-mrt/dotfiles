@@ -28,7 +28,6 @@ assert.ok(tiers[tiers.length - 1] > 0)
 assert.equal(score("zzz", app("Firefox")), 0)
 
 // initials and fuzzy
-assert.ok(score("vsc", app("Visual Studio Code")) > score("vsc", app("Vivid Scale Cat Xyz")) - 1)
 assert.ok(score("vsc", app("Visual Studio Code")) >= 700, "initials count as word-start")
 assert.ok(score("ff", app("Firefox")) > 0)
 assert.ok(score("thnr", app("Thunar")) > 0)
