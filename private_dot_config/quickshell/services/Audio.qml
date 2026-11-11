@@ -268,9 +268,15 @@ QtObject {
                 // volume, so they only owe the streams query. Plain
                 // "sink"/"source" events (hardware volume keys, default
                 // change, plug/unplug) still owe the full refresh.
-                if (!line.includes("sink") && !line.includes("source"))
+                // A default sink/source change arrives only as "Event
+                // 'change' on server", with no sink/source in the line;
+                // without this the new default isn't read until the 10s
+                // poll, and the first real change after it is mistaken
+                // for the sync read.
+                const server = line.includes("server")
+                if (!server && !line.includes("sink") && !line.includes("source"))
                     return
-                if (!/sink-input|source-output/.test(line))
+                if (server || !/sink-input|source-output/.test(line))
                     root.fullDirty = true
                 // A burst (one volume step emits several events) coalesces
                 // into one round of processes instead of six per line.
