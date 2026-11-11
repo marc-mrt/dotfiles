@@ -331,23 +331,40 @@ ColumnLayout {
         RowLayout {
             id: dotsRow
             anchors.centerIn: parent
-            spacing: 6
+            spacing: 0
 
             Repeater {
                 model: Math.max(4, ...Hyprland.workspaces.values.map(w => w.id))
-                Rectangle {
+                // Item wrapper so the click target (16x16) is bigger than
+                // the 6px dot it draws; the dot animates inside it without
+                // the row's layout shifting under the cursor.
+                Item {
                     id: dot
                     required property int index
                     readonly property int wsId: index + 1
                     readonly property bool active: Hyprland.workspaces.values
                         .some(w => w.id === dot.wsId && w.active)
 
-                    implicitWidth: active ? 10 : 6
-                    implicitHeight: active ? 10 : 6
-                    radius: width / 2
-                    color: active ? Colors.accent : Colors.alpha(Colors.text, 0.3)
-                    Behavior on implicitWidth { NumberAnimation { duration: Metrics.durationFast } }
-                    Behavior on implicitHeight { NumberAnimation { duration: Metrics.durationFast } }
+                    implicitWidth: 16
+                    implicitHeight: 16
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: dot.active ? 10 : 6
+                        height: width
+                        radius: width / 2
+                        color: dot.active ? Colors.accent : Colors.alpha(Colors.text, 0.3)
+                        Behavior on width { NumberAnimation { duration: Metrics.durationFast } }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            Hyprland.dispatch("workspace " + dot.wsId)
+                            PadState.close()
+                        }
+                    }
                 }
             }
         }
