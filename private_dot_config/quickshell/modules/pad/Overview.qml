@@ -105,6 +105,7 @@ ColumnLayout {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             spacing: 0
+            C.Media {}
             C.Network {}
             C.Bluetooth {}
             C.Brightness {}
@@ -229,6 +230,7 @@ ColumnLayout {
                     : PanelState.inlineOpen === "bluetooth" ? bluetoothComp
                     : PanelState.inlineOpen === "brightness" ? brightnessComp
                     : PanelState.inlineOpen === "volume" ? volumeComp
+                    : PanelState.inlineOpen === "media" ? mediaComp
                     : PanelState.inlineOpen === "search" ? searchComp
                     : PanelState.inlineOpen === "calendar" ? calendarComp
                     : PanelState.inlineOpen === "system" ? systemComp
@@ -349,6 +351,7 @@ ColumnLayout {
     Component { id: bluetoothComp; Tabs.Bluetooth {} }
     Component { id: brightnessComp; Tabs.Brightness {} }
     Component { id: volumeComp; Tabs.Volume {} }
+    Component { id: mediaComp; Tabs.Media {} }
     Component { id: searchComp; Search {} }
     Component { id: calendarComp; Tabs.Calendar {} }
     Component { id: systemComp; SystemMetrics {} }
