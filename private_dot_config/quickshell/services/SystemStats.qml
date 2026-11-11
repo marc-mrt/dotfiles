@@ -147,9 +147,13 @@ fi
         }
     }
 
+    // Only the pad shows these numbers, so poll only while it is up. Each
+    // tick spawns a shell script that reads /proc and sysfs; running it
+    // every 2s behind a closed pad is pure waste. triggeredOnStart makes
+    // opening the pad refresh immediately instead of showing stale values.
     property Timer poll: Timer {
         interval: 2000
-        running: true
+        running: PadState.shown
         repeat: true
         triggeredOnStart: true
         onTriggered: root.refresh()

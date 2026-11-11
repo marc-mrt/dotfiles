@@ -117,9 +117,12 @@ QtObject {
         }
     }
 
+    // --rescan no: the periodic poll must not make the radio scan (the
+    // default "auto" rescans when results are stale, and a scan interrupts
+    // traffic). It reads NetworkManager's own cached scan results instead.
     // SSID is put last so its value (which may contain colons) is the remainder.
     property Process listProc: Process {
-        command: ["nmcli", "-t", "-f", "IN-USE,SIGNAL,SECURITY,SSID", "dev", "wifi", "list"]
+        command: ["nmcli", "-t", "-f", "IN-USE,SIGNAL,SECURITY,SSID", "dev", "wifi", "list", "--rescan", "no"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const seen = ({})
@@ -256,9 +259,11 @@ QtObject {
         }
     }
 
+    // Every consumer of this state lives in the pad (tab and chips), so
+    // poll only while it is shown; triggeredOnStart refreshes on open.
     property Timer poll: Timer {
         interval: 10000
-        running: true
+        running: PadState.shown
         repeat: true
         triggeredOnStart: true
         onTriggered: root.refresh()

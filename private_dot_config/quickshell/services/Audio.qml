@@ -239,9 +239,33 @@ QtObject {
         running: true
         stdout: SplitParser {
             onRead: (line) => {
-                if (line.includes("sink") || line.includes("source"))
-                    root.refresh()
+                // "sink-input"/"source-output" are per-app streams: they
+                // fire on every stream start/stop and slider drag, and
+                // none of them can change the device lists or the default
+                // volume, so they only owe the streams query. Plain
+                // "sink"/"source" events (hardware volume keys, default
+                // change, plug/unplug) still owe the full refresh.
+                if (!line.includes("sink") && !line.includes("source"))
+                    return
+                if (!/sink-input|source-output/.test(line))
+                    root.fullDirty = true
+                // A burst (one volume step emits several events) coalesces
+                // into one round of processes instead of six per line.
+                root.coalesce.restart()
             }
+        }
+    }
+
+    property bool fullDirty: false
+    property Timer coalesce: Timer {
+        interval: 100
+        onTriggered: {
+            const full = root.fullDirty
+            root.fullDirty = false
+            if (full)
+                root.refresh()
+            else
+                streamsProc.running = true
         }
     }
 
