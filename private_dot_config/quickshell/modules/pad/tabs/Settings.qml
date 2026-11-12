@@ -15,6 +15,36 @@ ColumnLayout {
     W.TabHeader { title: "Settings" }
 
     W.Section {
+        W.SectionLabel { text: "QUICK TOGGLES" }
+
+        // The footer chips for these only show while the state is on, so this
+        // is the one place they can be switched from when off.
+        Repeater {
+            model: [
+                { glyph: "\u{F00AF}", label: "Bluetooth" },
+                { glyph: "\u{EF59}", label: "Caffeine" },
+                { glyph: "\u{F009B}", label: "Do Not Disturb" }
+            ]
+            delegate: W.ListRow {
+                id: row
+                required property var modelData
+                required property int index
+                glyph: row.modelData.glyph
+                label: row.modelData.label
+                onClicked: tog.toggled()
+
+                W.Toggle {
+                    id: tog
+                    checked: row.index === 0 ? Bluetooth.powered
+                        : row.index === 1 ? Caffeine.active : Notifications.dnd
+                    onToggled: row.index === 0 ? Bluetooth.togglePower()
+                        : row.index === 1 ? Caffeine.toggle() : Notifications.toggleDnd()
+                }
+            }
+        }
+    }
+
+    W.Section {
         W.SectionLabel { text: "MOUSE SENSITIVITY" }
 
         // sensitivity is -1..1 (Hyprland's own libinput accel-speed range);
