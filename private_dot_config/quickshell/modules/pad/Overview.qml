@@ -361,7 +361,7 @@ ColumnLayout {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            Hyprland.dispatch("workspace " + dot.wsId)
+                            Hypr.focusWorkspace(dot.wsId)
                             PadState.close()
                         }
                     }

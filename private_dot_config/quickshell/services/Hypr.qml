@@ -42,6 +42,16 @@ QtObject {
         Hyprland.dispatch('hl.dsp.focus({ window = "address:0x' + bare + '" })')
     }
 
+    // Switch to a workspace by numeric id. Same Lua-form reason as above:
+    // the flat "workspace 2" dispatch is a parse error here. The id is
+    // coerced to an integer so nothing but a number reaches the Lua string.
+    function focusWorkspace(id) {
+        const n = parseInt(id, 10)
+        if (isNaN(n))
+            return
+        Hyprland.dispatch('hl.dsp.focus({ workspace = ' + n + ' })')
+    }
+
     // Window class -> desktop entry -> theme icon path. "" when the class
     // is empty or nothing in the theme matches, which every caller renders
     // as a fallback glyph rather than a blank.
