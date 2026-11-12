@@ -22,6 +22,9 @@ Item {
     property bool active: false
     // A toggle that is off but keeps its glyph: dims the label, no pill.
     property bool dimmed: false
+    // Something wrong worth noticing (muted, offline): lifts the glyph to
+    // full contrast like hover/active do, without adding a pill.
+    property bool alert: false
     // For an on/off glyph pair sharing a base shape but not ink width: centring the advance pins the shared shape so only the overflow (e.g. a slash) changes.
     property bool centreOnAdvance: false
 
@@ -57,7 +60,12 @@ Item {
         anchors.centerIn: parent
         anchors.horizontalCenterOffset: root.centreOnAdvance ? (label.implicitWidth - ink.advanceWidth) / 2 : 0
         text: root.text
-        color: root.dimmed ? Colors.alpha(Colors.text, 0.4) : Colors.text
+        // Idle glyphs recede so the row reads as quiet until something is
+        // hovered, open or alerting.
+        color: root.dimmed ? Colors.alpha(Colors.text, 0.4)
+            : (root.active || root.alert || ma.containsMouse) ? Colors.text
+            : Colors.alpha(Colors.text, 0.6)
+        Behavior on color { ColorAnimation { duration: Metrics.durationFast } }
         font.pixelSize: Metrics.fontBody
     }
 
