@@ -115,15 +115,16 @@ ColumnLayout {
             // underneath the cursor when its 6s auto-hide happens to land
             // during the drag — releasing then either dismisses it or
             // settles it back, and the timeout applies again from there.
-            visible: PadState.shown || cardMa.pressed
-                || root.now < card.modelData.expiresAt
+            // Critical cards skip both the timeout and DND; DND otherwise
+            // keeps new arrivals out of the corner until the pad opens.
+            visible: PadState.shown || cardMa.pressed || card.modelData.critical
+                || (!Notifications.dnd && root.now < card.modelData.expiresAt)
             Layout.preferredWidth: Metrics.notifCardWidth
             implicitHeight: content.implicitHeight + 20
             // Neutral by default, deliberately NOT accent: an accent border
             // means "this surface holds Hyprland's focus", which is the
-            // pad's alone (see modules/Pad.qml and shell.qml's
-            // HyprlandFocusGrab). Notifications never take focus — they're
-            // in the grab for clicks only — so they only ever borrow it for
+            // pad's alone (see modules/Pad.qml). Notifications never take
+            // focus — their layer is unfocusable — so they only ever borrow it for
             // the two cases below, where it reads as "look here" rather
             // than "focused".
             //
@@ -370,6 +371,56 @@ ColumnLayout {
                     }
                 }
             }
+        }
+    }
+
+    // What arrived since the pad was last open and is no longer (or, under
+    // DND, never was) on screen. With no bar this pill is the only trace of
+    // it; clicking opens the pad, which shows the whole history.
+    readonly property int waiting: {
+        if (PadState.shown)
+            return 0
+        let n = 0
+        for (const g of Notifications.groups) {
+            if (g.critical || (!Notifications.dnd && root.now < g.expiresAt))
+                continue
+            for (const m of g.messages)
+                if (m.receivedAtMs > Notifications.seenAtMs)
+                    n++
+        }
+        return n
+    }
+
+    W.Card {
+        visible: root.waiting > 0
+        Layout.alignment: Qt.AlignRight
+        implicitWidth: hintRow.implicitWidth + 20
+        implicitHeight: hintRow.implicitHeight + 10
+        opacity: hintMa.containsMouse ? 1 : 0.6
+        Behavior on opacity { NumberAnimation { duration: Metrics.durationFast } }
+
+        Row {
+            id: hintRow
+            anchors.centerIn: parent
+            spacing: 6
+            Text {
+                text: Notifications.dnd ? "\u{F009B}" : "\u{F009A}"
+                color: Colors.text
+                font.pixelSize: Metrics.fontSmall
+            }
+            Text {
+                text: root.waiting
+                color: Colors.text
+                font.pixelSize: Metrics.fontSmall
+            }
+        }
+
+        MouseArea {
+            id: hintMa
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: PadState.toggle()
         }
     }
 }

@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 import "../../config"
 import "../../services"
 import "./chips" as C
@@ -20,11 +19,89 @@ ColumnLayout {
     width: parent ? parent.width : implicitWidth
     spacing: 14
 
-    // Forwarded from Pad.qml's hidden key-catcher (Up/Down/Enter) — only
-    // meaningful while the search tab is the one showing.
+    // Forwarded from Pad.qml's hidden key-catcher (Up/Down/Left/Right/
+    // Enter). Search runs its own selection and gets the calls passed
+    // straight through; every other tab shares the generic cursor below.
     function moveSelection(delta) {
-        if (expansionLoader.item && expansionLoader.item.moveSelection)
-            expansionLoader.item.moveSelection(delta)
+        const own = expansionLoader.item
+        if (!own)
+            return
+        if (own.moveSelection) {
+            own.moveSelection(delta)
+            return
+        }
+        const items = root.navItems()
+        if (items.length === 0)
+            return
+        const idx = items.indexOf(root.navItem)
+        root.navSelect(items[idx === -1 ? (delta > 0 ? 0 : items.length - 1)
+            : (idx + delta + items.length) % items.length])
+    }
+
+    // ── keyboard cursor for tabs ────────────────────────────────────────
+    // No tab declares what is navigable. The open tab's visible tree is
+    // walked in order and anything that looks operable is a stop: a row
+    // (`selected` + `clicked`: W.ListRow) or something steppable
+    // (`nudge()`: W.SliderTrack, W.PageBar). Re-walked on every keypress,
+    // so lists that rebuild under the cursor (a wi-fi rescan) just restart
+    // from the top instead of holding a dead delegate.
+    property var navItem: null
+    Connections {
+        target: PanelState
+        function onInlineOpenChanged() { root.navItem = null }
+    }
+
+    function navItems() {
+        const out = []
+        const walk = (it) => {
+            if (!it.visible)
+                return
+            if (typeof it.nudge === "function"
+                    || (it.selected !== undefined && typeof it.clicked === "function"))
+                out.push(it)
+            for (const child of it.children)
+                walk(child)
+        }
+        if (expansionLoader.item)
+            walk(expansionLoader.item)
+        return out
+    }
+
+    function navSelect(item) {
+        try {
+            if (root.navItem)
+                root.navItem.selected = false
+        } catch (e) {
+            // delegate already destroyed — nothing to unhighlight
+        }
+        root.navItem = item
+        item.selected = true
+        if (!expansionFlick.interactive)
+            return
+        const top = item.mapToItem(expansionLoader.item, 0, 0).y
+        if (top < expansionFlick.contentY)
+            expansionFlick.contentY = top
+        else if (top + item.height > expansionFlick.contentY + expansionFlick.height)
+            expansionFlick.contentY = top + item.height - expansionFlick.height
+    }
+
+    // Left/Right. With nothing selected yet it grabs the tab's first
+    // steppable control, so "vol, Enter, Left Left" works without an Up/Down
+    // first. False = not ours, let the key through.
+    function nudge(delta) {
+        const own = expansionLoader.item
+        if (!own || own.moveSelection)
+            return false
+        let target = root.navItem
+        if (!target) {
+            target = root.navItems().find(i => typeof i.nudge === "function")
+            if (target)
+                root.navSelect(target)
+        }
+        if (!target || typeof target.nudge !== "function")
+            return false
+        target.nudge(delta)
+        return true
     }
 
     // Keeps a keyboard-moved selection inside the clipped area. The loaded
@@ -48,8 +125,11 @@ ColumnLayout {
         function onSelectionYChanged() { root.revealSelection() }
     }
     function activateSelected() {
-        if (expansionLoader.item && expansionLoader.item.activateSelected)
-            expansionLoader.item.activateSelected()
+        const own = expansionLoader.item
+        if (own && own.activateSelected)
+            own.activateSelected()
+        else if (root.navItem && typeof root.navItem.clicked === "function")
+            root.navItem.clicked()
     }
 
     property var now: new Date()
@@ -241,6 +321,7 @@ ColumnLayout {
                     : PanelState.inlineOpen === "system" ? systemComp
                     : PanelState.inlineOpen === "settings" ? settingsComp
                     : PanelState.inlineOpen === "power" ? powerComp
+                    : PanelState.inlineOpen === "clipboard" ? clipboardComp
                     : null
             }
         }
@@ -328,45 +409,10 @@ ColumnLayout {
         // any higher workspace that exists (SUPER+5..0 still bind up to 10
         // in hypr/lua/key_bindings.lua). No app icons, just which one is
         // currently active.
-        RowLayout {
+        W.WorkspaceDots {
             id: dotsRow
             anchors.centerIn: parent
-            spacing: 0
-
-            Repeater {
-                model: Math.max(4, ...Hyprland.workspaces.values.map(w => w.id))
-                // Item wrapper so the click target (16x16) is bigger than
-                // the 6px dot it draws; the dot animates inside it without
-                // the row's layout shifting under the cursor.
-                Item {
-                    id: dot
-                    required property int index
-                    readonly property int wsId: index + 1
-                    readonly property bool active: Hyprland.workspaces.values
-                        .some(w => w.id === dot.wsId && w.active)
-
-                    implicitWidth: 16
-                    implicitHeight: 16
-
-                    Rectangle {
-                        anchors.centerIn: parent
-                        width: dot.active ? 10 : 6
-                        height: width
-                        radius: width / 2
-                        color: dot.active ? Colors.accent : Colors.alpha(Colors.text, 0.3)
-                        Behavior on width { NumberAnimation { duration: Metrics.durationFast } }
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            Hypr.focusWorkspace(dot.wsId)
-                            PadState.close()
-                        }
-                    }
-                }
-            }
+            onPicked: PadState.close()
         }
     }
 
@@ -380,4 +426,5 @@ ColumnLayout {
     Component { id: systemComp; SystemMetrics {} }
     Component { id: settingsComp; Tabs.Settings {} }
     Component { id: powerComp; Tabs.Power {} }
+    Component { id: clipboardComp; Tabs.Clipboard {} }
 }

@@ -17,9 +17,9 @@ import Quickshell.Services.Notifications
 // auto-hides itself 6s after its newest message (see `groups`/expiresAt
 // below) but stays in `history` for later review — opening the pad reveals
 // everything again, in order. Only clicking a card removes it from history
-// outright. dnd only changes the bell's shape
-// (pad/chips/Notifications.qml) — it doesn't hide anything, same as
-// dunst's pause mode never hid history either.
+// outright. dnd keeps new cards out of the corner (they still land in
+// history, visible as soon as the pad opens); a critical notification
+// ignores both dnd and the 6s auto-hide and stays until dismissed.
 QtObject {
     id: root
 
@@ -28,6 +28,14 @@ QtObject {
     property var history: []
     property bool dnd: false
     property int nextId: 0
+    // When the pad was last open, i.e. when the whole history was last on
+    // screen. Anything newer that the corner is not showing is "waiting"
+    // (modules/NotificationStack.qml's hint pill).
+    property real seenAtMs: 0
+    property Connections padConn: Connections {
+        target: PadState
+        function onShownChanged() { root.seenAtMs = Date.now() }
+    }
 
     // history/dnd/nextId survive a hot reload (any config edit) by being
     // written to a file in $XDG_RUNTIME_DIR and read back on construction.
@@ -53,6 +61,7 @@ QtObject {
             root.history = v.history
             root.dnd = v.dnd
             root.nextId = v.nextId
+            root.seenAtMs = v.seenAtMs || 0
         } catch (e) {
             // missing or corrupt: start empty
         }
@@ -63,11 +72,13 @@ QtObject {
     function save() {
         if (root.restored)
             root.stateFile.setText(JSON.stringify({
-                history: root.history, dnd: root.dnd, nextId: root.nextId
+                history: root.history, dnd: root.dnd, nextId: root.nextId,
+                seenAtMs: root.seenAtMs
             }))
     }
     onHistoryChanged: root.save()
     onDndChanged: root.save()
+    onSeenAtMsChanged: root.save()
 
     // entry id -> its Notification, for as long as the server still has it.
     // An entry with no live notification (closed, or from before a reload
@@ -166,6 +177,7 @@ QtObject {
                 // pushed here — but `id` deliberately IS kept up to date
                 // every push, see the comment below.
                 last.messages.push(row)
+                last.critical = last.critical || !!row.critical
                 last.id = row.id
             } else {
                 groups.push({
@@ -188,6 +200,7 @@ QtObject {
                     appName: row.appName,
                     appIcon: row.appIcon,
                     messages: [row],
+                    critical: !!row.critical,
                     expiresAt: row.receivedAtMs + root.autoHideMs
                 })
             }
@@ -439,6 +452,7 @@ QtObject {
                 // render after the notification object is gone. May be
                 // empty (most notifications carry no image).
                 image: notification.image,
+                critical: notification.urgency === NotificationUrgency.Critical,
                 time: Qt.formatDateTime(new Date(), "hh:mm"),
                 receivedAtMs: Date.now()
             }

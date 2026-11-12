@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import "../config"
 import "../services"
+import "./ui" as W
 
 // Content only — window/positioning lives in shell.qml, same split as
 // Pad.qml/NotificationStack.qml. Driven entirely by services/Osd.qml.
@@ -11,10 +12,14 @@ RowLayout {
 
     readonly property bool isVolume: Osd.kind === "volume"
     readonly property bool isMic: Osd.kind === "mic"
+    readonly property bool isWorkspace: Osd.kind === "workspace"
     readonly property bool muted: root.isVolume && Osd.muted
     readonly property real frac: root.muted ? 0 : Osd.value / 100
 
+    W.WorkspaceDots { visible: root.isWorkspace }
+
     Text {
+        visible: !root.isWorkspace
         text: root.isMic
             ? (Osd.muted ? "\u{F036D}" : "\u{F036C}")
             : root.isVolume
@@ -27,7 +32,7 @@ RowLayout {
     Rectangle {
         id: track
         // A mic toggle has no level to show.
-        visible: !root.isMic
+        visible: !root.isMic && !root.isWorkspace
         Layout.preferredWidth: 140
         implicitHeight: 8
         radius: Metrics.radiusTrack
@@ -44,6 +49,7 @@ RowLayout {
     }
 
     Text {
+        visible: !root.isWorkspace
         text: root.isMic
             ? (Osd.muted ? "Mic muted" : "Mic on")
             : root.muted ? "Muted" : (Osd.value + "%")

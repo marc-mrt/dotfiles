@@ -8,7 +8,7 @@ import vm from "node:vm"
 const ctx = vm.createContext({})
 const src = fs.readFileSync(new URL("./searchScore.js", import.meta.url), "utf8")
 vm.runInContext(src.replace(/^\.pragma.*$/m, ""), ctx)
-const { score, rank, calc } = ctx
+const { score, rank, calc, isTabPrefix } = ctx
 
 const app = (name, extra = {}) => ({ id: name, name, generic: "", keywords: [], ...extra })
 const names = (r) => r.map((x) => x.name)
@@ -51,6 +51,12 @@ assert.deepEqual(q("ap", [app("Apple"), app("Apricot")]), ["Apple", "Apricot"])
 // empty query: launch count desc, then name; limit applies
 assert.deepEqual(q("", [app("B"), app("A"), app("C")], { C: 2 }), ["C", "A", "B"])
 assert.deepEqual(q("", [app("B"), app("A"), app("C")], {}, 2), ["A", "B"])
+
+// tabs lead on a 3+ letter name prefix only
+assert.ok(isTabPrefix("vol", "Volume"))
+assert.ok(isTabPrefix(" VOLUME ", "Volume"))
+assert.ok(!isTabPrefix("vo", "Volume"))
+assert.ok(!isTabPrefix("lum", "Volume"))
 
 // calculator: whitelist only, ^ is power
 assert.equal(calc("2+3*4"), 14)

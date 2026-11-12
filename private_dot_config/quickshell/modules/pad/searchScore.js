@@ -49,6 +49,14 @@ function rank(items, query, counts, limit) {
     return limit ? out.slice(0, limit) : out
 }
 
+// A pad tab outranks apps once the query is a 3+ letter prefix of the tab's
+// own name: "vol" is the Volume tab, not pavucontrol's "Volume Control".
+// Shorter queries stay app-first, so "s" is still Steam and not Settings.
+function isTabPrefix(query, name) {
+    const q = query.trim().toLowerCase()
+    return q.length >= 3 && name.toLowerCase().startsWith(q)
+}
+
 // Pure arithmetic only: the input is whatever the user typed into the search
 // box, so it is whitelisted and then run through a small parser. It is never
 // handed to eval(). Returns a finite number, or null when the text isn't an

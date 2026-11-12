@@ -34,6 +34,20 @@ Item {
     // state on open and immediately close itself again.
     property bool everActive: false
 
+    // True from the first frame of the open pop until the exit fade has
+    // finished; shell.qml keeps the window mapped for exactly that long.
+    readonly property bool fading: card.opacity > 0
+
+    // Back to a bare overview. Runs once the exit fade is over (and again
+    // on open, for a pad reopened mid-fade) rather than the moment the pad
+    // closes, so the card doesn't collapse under the fade.
+    function reset() {
+        widthBehavior.enabled = false
+        heightBehavior.enabled = false
+        PanelState.close()
+        keyCatcher.text = ""
+    }
+
     readonly property bool windowActive: root.Window.active
     onWindowActiveChanged: {
         if (root.windowActive)
@@ -49,23 +63,19 @@ Item {
         target: PadState
         function onShownChanged() {
             if (!PadState.shown) {
-                // Turned off *before* PanelState.close() below, so the
-                // resulting inlineOpen/layout change writes straight to
-                // width/height with no animation in the way — no race to
-                // lose. A hidden window's animation clock never ticks (Qt
-                // suspends it while unexposed), so a Behavior left enabled
-                // here starts a collapse animation that never advances until
-                // the pad is shown again, which is what made it look like it
-                // "folds" open: reopening resumes that stalled animation
-                // from wherever it was frozen instead of showing the settled
-                // size.
-                widthBehavior.enabled = false
-                heightBehavior.enabled = false
                 root.everActive = false
-                PanelState.close()
                 Notifications.clearSelection()
-                keyCatcher.text = ""
             } else {
+                // reset() turns the size Behaviors off *before* it collapses
+                // the card, so the change writes straight to width/height. A
+                // hidden window's animation clock never ticks (Qt suspends
+                // it while unexposed), so a Behavior left enabled would start
+                // a collapse that only advances once the pad is shown again
+                // — which is what once made it look like it "folds" open.
+                root.reset()
+                // Reopened mid-fade the window never lost focus, so there
+                // is no activation edge left to set this.
+                root.everActive = root.windowActive
                 // Back on now that the card is settled and about to show
                 // again, so in-session changes (expanding a tab, growing for
                 // search) still animate normally.
@@ -108,8 +118,8 @@ Item {
         height: inner.implicitHeight + Metrics.padPaddingTop + Metrics.padPadding
         radius: Metrics.radiusLarge
         // Accent border = "this surface has the compositor's focus", which
-        // the pad genuinely does now (shell.qml holds a HyprlandFocusGrab
-        // for as long as it's open). It's the only surface that wears it —
+        // the pad genuinely does: it is a real toplevel that Hyprland
+        // focuses on map (shell.qml). It's the only surface that wears it —
         // modules/NotificationStack.qml's cards used to match this for
         // looks alone and have gone neutral so the cue stays meaningful.
         accented: true
@@ -117,14 +127,19 @@ Item {
         // Opens with a soft pop rather than just snapping onto screen.
         // Starts at rest (0/0.96) so the very first frame the window is
         // mapped on already reads as "mid-animation in", not a flash of
-        // full opacity before the anim catches up. No exit fade — the
-        // window disappears the same instant PadState.shown goes false, so
-        // there's no frame left to animate through on the way out.
+        // full opacity before the anim catches up. The way out is the same
+        // pop reversed and quicker — focus only returns to the window
+        // underneath once this surface unmaps, so the exit must not linger.
         opacity: PadState.shown ? 1 : 0
         scale: PadState.shown ? 1 : 0.96
         transformOrigin: Item.Top
-        Behavior on opacity { NumberAnimation { duration: Metrics.durationNormal; easing.type: Metrics.easingStandard } }
-        Behavior on scale { NumberAnimation { duration: Metrics.durationNormal; easing.type: Metrics.easingStandard } }
+        readonly property int popDuration: PadState.shown ? Metrics.durationNormal : Metrics.durationFast
+        Behavior on opacity { NumberAnimation { duration: card.popDuration; easing.type: Metrics.easingStandard } }
+        Behavior on scale { NumberAnimation { duration: card.popDuration; easing.type: Metrics.easingStandard } }
+        onOpacityChanged: {
+            if (card.opacity === 0 && !PadState.shown)
+                root.reset()
+        }
 
         // id'd so onShownChanged above can turn these off before closing —
         // see the comment there for why. Starts disabled to match
@@ -155,6 +170,10 @@ Item {
             Keys.onEscapePressed: PadState.close()
             Keys.onUpPressed: overview.moveSelection(-1)
             Keys.onDownPressed: overview.moveSelection(1)
+            // Sliders and page bars in the open tab; unhandled (search, no
+            // tab) falls through to plain cursor movement.
+            Keys.onLeftPressed: (event) => event.accepted = overview.nudge(-1)
+            Keys.onRightPressed: (event) => event.accepted = overview.nudge(1)
             // A notification selection (Tab, below) takes over Enter the
             // same way it takes over Backspace/Delete — whichever thing
             // Tab last pointed at is what the other keys act on.

@@ -23,6 +23,16 @@ hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 -- Quickshell
 hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("qs ipc call pad toggleOverview"))
 hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd("qs ipc call pad toggleWindows"))
+hl.bind(mainMod .. " + SHIFT + Tab", hl.dsp.exec_cmd("qs ipc call pad toggleWindowsBack"))
+hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("qs ipc call pad openClipboard"))
+
+-- Screenshots (grim + slurp): saved to ~/Pictures/Screenshots and copied.
+-- Print / SUPER+SHIFT+S = region, SHIFT+Print = whole screen.
+local shot = [[sh -c 'd=~/Pictures/Screenshots; mkdir -p "$d"; f="$d/$(date +%F_%H-%M-%S).png"; grim GEOM "$f" && wl-copy < "$f" && notify-send -i "$f" Screenshot "Saved and copied"']]
+local region = shot:gsub("GEOM", function() return [[-g "$(slurp)"]] end)
+hl.bind("Print",                   hl.dsp.exec_cmd(region))
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd(region))
+hl.bind("SHIFT + Print",           hl.dsp.exec_cmd((shot:gsub("GEOM ", ""))))
 
 -- App launcher
 -- hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("rofi -show drun -theme ~/.config/rofi/launcher.rasi"))
@@ -44,12 +54,29 @@ hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ mode = "maximized" }))
+hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "fullscreen" }))
 
 -- Move focus with mainMod + arrow keys
 hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
 hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))
 hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }))
+
+-- Move the window with mainMod + SHIFT + arrows, resize with mainMod + CTRL + arrows
+local step = 40
+for dir, d in pairs({ left = { -step, 0 }, right = { step, 0 }, up = { 0, -step }, down = { 0, step } }) do
+    hl.bind(mainMod .. " + SHIFT + " .. dir, hl.dsp.window.move({ direction = dir }))
+    hl.bind(mainMod .. " + CTRL + " .. dir,
+        hl.dsp.window.resize({ x = d[1], y = d[2], relative = true }), { repeating = true })
+end
+
+-- Scratchpad: mainMod + S shows/hides it, mainMod + ALT + S sends the window there
+hl.bind(mainMod .. " + S",       hl.dsp.workspace.toggle_special("magic"))
+hl.bind(mainMod .. " + ALT + S", hl.dsp.window.move({ workspace = "special:magic" }))
+
+-- Scroll through existing workspaces with mainMod + scroll
+hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
+hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
 
 -- Switch workspaces with mainMod + [0-9]
 -- Move active window to a workspace with mainMod + SHIFT + [0-9]

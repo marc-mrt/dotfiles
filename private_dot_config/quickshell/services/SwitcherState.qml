@@ -36,6 +36,8 @@ QtObject {
     property var order: []
 
     property bool _busy: false
+    // +1 SUPER+Tab, -1 SUPER+SHIFT+Tab; read when the query lands.
+    property int _dir: 1
     // Bare-hex address of whatever was actually focused right before this
     // opened, captured synchronously in cycle() below — see there for why
     // this can't just be read back out of the hyprctl snapshot.
@@ -92,7 +94,7 @@ QtObject {
                 } else {
                     const cur = seq.indexOf(root.selectedAddress)
                     if (cur !== -1) {
-                        root.selectedAddress = seq[(cur + 1 + seq.length) % seq.length]
+                        root.selectedAddress = seq[(cur + root._dir + seq.length) % seq.length]
                     } else if (root._originAddress) {
                         // First open (or the previous selection vanished
                         // mid-cycle) — start from whatever was genuinely
@@ -100,7 +102,7 @@ QtObject {
                         // not this snapshot's own "active" window, which by
                         // now is frequently this overlay itself.
                         const originIdx = seq.indexOf("0x" + root._originAddress)
-                        root.selectedAddress = seq[(originIdx + 1 + seq.length) % seq.length]
+                        root.selectedAddress = seq[(Math.max(0, originIdx) + root._dir + seq.length) % seq.length]
                     } else {
                         root.selectedAddress = seq[0]
                     }
@@ -110,8 +112,11 @@ QtObject {
         }
     }
 
+    // Safety net only, for a SUPER release this window never saw (let go
+    // before it had focus). Was 2s, which closed it on anyone holding
+    // SUPER to actually read the thumbnails.
     property Timer idleTimer: Timer {
-        interval: 2000
+        interval: 10000
         onTriggered: root.close()
     }
 
@@ -119,9 +124,10 @@ QtObject {
     // groups/order reflect whatever's actually on screen right now, then
     // steps the highlight one further through the sequence. Real focus
     // never moves here — see commit()/select().
-    function cycle() {
+    function cycle(dir) {
         if (root._busy)
             return
+        root._dir = dir === -1 ? -1 : 1
         if (!root.shown) {
             // Capture what's really focused right now, synchronously,
             // before this overlay maps and Hyprland focuses it instead —

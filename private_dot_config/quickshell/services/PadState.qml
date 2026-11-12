@@ -24,8 +24,9 @@ QtObject {
         shown = true
     }
 
+    // The query is left alone here: the card is still fading out with the
+    // results on it. modules/Pad.qml's reset() clears it once that is over.
     function close() {
         shown = false
-        searchQuery = ""
     }
 }

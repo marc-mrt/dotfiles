@@ -16,6 +16,14 @@ Rectangle {
     property var model: []
     property int current: 0
 
+    // Keyboard cursor (modules/pad/Overview.qml): Left/Right step the page.
+    property bool selected: false
+    function nudge(delta) {
+        root.current = Math.max(0, Math.min(root.model.length - 1, root.current + delta))
+    }
+    border.width: root.selected ? 1 : 0
+    border.color: Colors.accent
+
     Layout.fillWidth: true
     implicitHeight: Metrics.fontSecondary + 12  // label plus 6px above and below
     radius: Metrics.radiusControl + 2  // segment radius plus the 2px inset, so corners stay concentric

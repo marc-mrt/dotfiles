@@ -33,7 +33,8 @@ ColumnLayout {
         { id: "system", name: "System", target: "system" },
         { id: "settings", name: "Settings", target: "settings" },
         { id: "media", name: "Media", target: "media" },
-        { id: "power", name: "Power", target: "power" }
+        { id: "power", name: "Power", target: "power" },
+        { id: "clipboard", name: "Clipboard", target: "clipboard" }
     ]
 
     // Session actions are results only while you are searching for them —
@@ -86,8 +87,12 @@ ColumnLayout {
     // Apps lead, matching the old drun muscle memory — window switching has
     // its own dedicated SUPER+Tab overlay now (modules/WindowSwitcher.qml),
     // so this list no longer needs a windows-first bias.
-    readonly property var matches: [...calcResults, ...appResults, ...windowResults,
-                                    ...shortcutResults, ...sessionResults]
+    // ...except a tab named outright (Score.isTabPrefix), which leads.
+    readonly property var matches: [...calcResults,
+        ...shortcutResults.filter(r => Score.isTabPrefix(root.query, r.name)),
+        ...appResults, ...windowResults,
+        ...shortcutResults.filter(r => !Score.isTabPrefix(root.query, r.name)),
+        ...sessionResults]
 
     // Nothing matched: offer to run what was typed instead of a dead end.
     readonly property var results: (matches.length === 0 && root.query !== "")

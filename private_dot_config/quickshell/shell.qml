@@ -28,7 +28,15 @@ ShellRoot {
             PadState.toggle()
         }
         function toggleWindows(): void {
-            SwitcherState.cycle()
+            SwitcherState.cycle(1)
+        }
+        function toggleWindowsBack(): void {
+            SwitcherState.cycle(-1)
+        }
+        function openClipboard(): void {
+            if (!PadState.shown)
+                PadState.toggle()
+            PanelState.inlineOpen = "clipboard"
         }
     }
 
@@ -69,7 +77,8 @@ ShellRoot {
     FloatingWindow {
         id: padWin
         screen: Quickshell.screens[0]
-        visible: PadState.shown
+        // Stays mapped through the exit fade (modules/Pad.qml's `fading`).
+        visible: PadState.shown || padContent.fading
         title: "quickshell-pad"
 
         implicitWidth: padWin.screen.width
@@ -77,6 +86,7 @@ ShellRoot {
         color: "transparent"
 
         Pad {
+            id: padContent
             anchors.fill: parent
         }
     }

@@ -17,6 +17,13 @@ Item {
     property color fillColor: Colors.accent
     signal moved(real fraction)
 
+    // Keyboard cursor (modules/pad/Overview.qml): `selected` shows the
+    // same grown handle a hover does, nudge() is one Left/Right step.
+    property bool selected: false
+    function nudge(delta) {
+        root.moved(Math.max(0, Math.min(1, root.clamped + delta * 0.05)))
+    }
+
     readonly property real clamped: Math.max(0, Math.min(1, root.fraction))
 
     // Hit area is much taller than the visible track, so grabbing the
@@ -43,10 +50,10 @@ Item {
     // has to look grabbable. Positioned from its own centre so it swells in
     // place instead of drifting sideways as the size changes.
     Rectangle {
-        width: ma.containsMouse || ma.pressed ? 18 : 14
+        width: ma.containsMouse || ma.pressed || root.selected ? 18 : 14
         height: width
         radius: width / 2
-        color: Colors.text
+        color: root.selected ? Colors.accent : Colors.text
         y: (parent.height - height) / 2
         x: Math.max(0, Math.min(parent.width - width,
             parent.width * root.clamped - width / 2))
