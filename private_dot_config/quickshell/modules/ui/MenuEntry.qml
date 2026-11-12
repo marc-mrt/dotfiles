@@ -42,7 +42,7 @@ ColumnLayout {
         visible: !root.modelData.isSeparator
         Layout.fillWidth: true
         implicitHeight: 34
-        radius: 6
+        radius: Metrics.radiusSmall
         color: rowMa.containsMouse ? Colors.alpha(Colors.text, 0.08) : "transparent"
         Behavior on color { ColorAnimation { duration: Metrics.durationFast } }
 

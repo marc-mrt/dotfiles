@@ -57,7 +57,7 @@ ColumnLayout {
             Rectangle {
                 Layout.preferredWidth: 72
                 Layout.preferredHeight: 72
-                radius: 8
+                radius: Metrics.radiusControl
                 color: Colors.base
                 clip: true
 

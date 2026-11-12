@@ -28,13 +28,13 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: parent.width
         height: 8
-        radius: 4
+        radius: Metrics.radiusTrack
         color: Colors.base
 
         Rectangle {
             width: parent.width * root.clamped
             height: parent.height
-            radius: 4
+            radius: Metrics.radiusTrack
             color: root.fillColor
         }
     }

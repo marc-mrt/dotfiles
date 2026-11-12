@@ -98,7 +98,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         width: contentRow.implicitWidth + Metrics.switcherPadding * 2
         height: contentRow.implicitHeight + Metrics.switcherPadding * 2
-        radius: Metrics.switcherRadius
+        radius: Metrics.radiusLarge
 
         Row {
             id: contentRow
@@ -129,7 +129,7 @@ Item {
 
                         Rectangle {
                             anchors.fill: parent
-                            radius: 8
+                            radius: Metrics.radiusControl
                             color: Colors.alpha(Colors.text, 0.04)
                         }
 
@@ -163,7 +163,7 @@ Item {
                                 Rectangle {
                                     id: bg
                                     anchors.fill: parent
-                                    radius: Metrics.switcherTileRadius
+                                    radius: Metrics.radiusControl
                                     clip: true
                                     color: Colors.alpha(Colors.text, 0.10)
 
@@ -218,7 +218,7 @@ Item {
                                 // of getting covered.
                                 Rectangle {
                                     anchors.fill: parent
-                                    radius: Metrics.switcherTileRadius
+                                    radius: Metrics.radiusControl
                                     color: "transparent"
                                     border.width: tile.isSelected ? 3 : 1
                                     border.color: tile.isSelected ? Colors.accent : Colors.alpha(Colors.text, 0.18)

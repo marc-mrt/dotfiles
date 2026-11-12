@@ -61,7 +61,7 @@ Rectangle {
 
     Layout.fillWidth: true
     implicitHeight: Math.max(40, textFlow.implicitHeight + 14)
-    radius: 8
+    radius: Metrics.radiusControl
     color: root.highlighted ? Colors.alpha(Colors.text, 0.08) : "transparent"
     Behavior on color { ColorAnimation { duration: Metrics.durationFast } }
 

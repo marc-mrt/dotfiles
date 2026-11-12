@@ -19,7 +19,7 @@ import "../../config"
 // border says "this surface holds the compositor's focus", which is the
 // pad's alone (see modules/Pad.qml). Naming it keeps that cue explicit
 // instead of an unexplained exception at one call site. Callers that need
-// a different corner radius (the pad and the switcher board are both 20)
+// a different corner radius (the pad and the switcher board use radiusLarge)
 // just set `radius`; everything else takes the default for its variant.
 Rectangle {
     id: root
@@ -27,7 +27,7 @@ Rectangle {
     property bool sunken: false
     property bool accented: false
 
-    radius: root.sunken ? 12 : 14
+    radius: root.sunken ? Metrics.radiusSection : Metrics.radiusCard
     color: root.sunken
         ? Colors.alpha(Colors.base, 0.45)
         : Colors.alpha(Colors.surface, 0.92)

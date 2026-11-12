@@ -60,7 +60,7 @@ PopupWindow {
         id: card
         width: implicitWidth
         height: implicitHeight
-        radius: 10
+        radius: Metrics.radiusSection
         implicitWidth: Math.max(160, list.implicitWidth + 16)
         implicitHeight: list.implicitHeight + 12
 

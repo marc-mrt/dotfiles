@@ -33,7 +33,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: 8
+        radius: Metrics.radiusControl
         color: ma.containsMouse ? Colors.alpha(Colors.text, 0.1) : "transparent"
         Behavior on color { ColorAnimation { duration: Metrics.durationFast } }
     }
