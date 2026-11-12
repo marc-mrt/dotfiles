@@ -136,7 +136,7 @@ ColumnLayout {
             anchors.centerIn: clockColumn
             width: clockColumn.width + 24
             height: clockColumn.height + 10
-            radius: 12
+            radius: Metrics.radiusSection
             hovered: clockMa.containsMouse
         }
 

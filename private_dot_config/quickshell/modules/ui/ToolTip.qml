@@ -11,7 +11,7 @@ Card {
     property bool show: false
     property int delay: 400
 
-    radius: 8
+    radius: Metrics.radiusControl
     implicitWidth: label.implicitWidth + 16
     implicitHeight: label.implicitHeight + 8
 

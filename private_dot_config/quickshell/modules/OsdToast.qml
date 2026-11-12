@@ -30,13 +30,13 @@ RowLayout {
         visible: !root.isMic
         Layout.preferredWidth: 140
         implicitHeight: 8
-        radius: 4
+        radius: Metrics.radiusTrack
         color: Colors.base
 
         Rectangle {
             width: parent.width * root.frac
             height: parent.height
-            radius: 4
+            radius: Metrics.radiusTrack
             color: root.muted
                 ? Colors.alpha(Colors.text, 0.3)
                 : Colors.accent

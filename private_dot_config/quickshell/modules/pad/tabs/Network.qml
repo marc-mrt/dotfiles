@@ -96,7 +96,7 @@ ColumnLayout {
                         Rectangle {
                             Layout.fillWidth: true
                             implicitHeight: 34
-                            radius: 8
+                            radius: Metrics.radiusControl
                             color: Colors.base
                             TextInput {
                                 id: pwInput
@@ -119,7 +119,7 @@ ColumnLayout {
                         Rectangle {
                             implicitWidth: 70
                             implicitHeight: 34
-                            radius: 8
+                            radius: Metrics.radiusControl
                             // Lightened rather than tinted: a faint overlay is
                             // invisible on an accent-filled button.
                             color: connectMa.containsMouse
@@ -226,7 +226,7 @@ ColumnLayout {
                         Rectangle {
                             Layout.fillWidth: true
                             implicitHeight: 34
-                            radius: 8
+                            radius: Metrics.radiusControl
                             color: Colors.base
                             TextInput {
                                 id: pskInput
@@ -245,7 +245,7 @@ ColumnLayout {
                         Rectangle {
                             implicitWidth: 70
                             implicitHeight: 34
-                            radius: 8
+                            radius: Metrics.radiusControl
                             color: saveMa.containsMouse
                                 ? Qt.lighter(Colors.accent, 1.2) : Colors.accent
                             Behavior on color { ColorAnimation { duration: Metrics.durationFast } }

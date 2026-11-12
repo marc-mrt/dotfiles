@@ -5,6 +5,15 @@ import QtQuick
 QtObject {
     readonly property int chipHeight: 41
 
+    // Corner radii. One scale instead of per-file literals, so the whole
+    // shell's sharpness is tuned in one place (was 20/14/12/10/8/6/4 ad hoc).
+    readonly property int radiusLarge: 12   // pad, window switcher board
+    readonly property int radiusCard: 10    // Card default
+    readonly property int radiusSection: 8  // sunken Card, popup menus, clock hover
+    readonly property int radiusControl: 6  // list rows, buttons, toggles, tooltips, thumbnails, tiles
+    readonly property int radiusSmall: 4    // menu entries
+    readonly property int radiusTrack: 3    // slider and OSD bars
+
     // Pad — floating card, positioned by modules/Pad.qml.
     readonly property int padWidth: 576
     // Search needs more room for a results list than a collapsed widget
@@ -18,7 +27,6 @@ QtObject {
     // scrolls its contents instead (modules/pad/Overview.qml). Sits
     // comfortably under padTopFraction's remaining 70%.
     readonly property real padMaxHeightFraction: 0.35
-    readonly property int padRadius: 20
     readonly property int padPadding: 16
     // Half the usual padding above the first row specifically, for a
     // tighter/more compact top edge than the sides/bottom.
@@ -38,11 +46,9 @@ QtObject {
     readonly property int switcherCanvasWidth: 560
     readonly property int switcherCanvasHeight: 340
     readonly property int switcherFooterHeight: 34
-    readonly property int switcherTileRadius: 10
     // Small inset between adjacent window tiles within one workspace —
     // cosmetic breathing room, not a reflection of Hyprland's real gaps_in.
     readonly property int switcherTileGap: 6
-    readonly property int switcherRadius: 20
     readonly property int switcherPadding: 16
     // Gap between workspace columns — the only thing delimiting them now
     // that there's one outer card instead of one per workspace.

@@ -328,7 +328,7 @@ ColumnLayout {
                                 Layout.alignment: Qt.AlignTop
                                 implicitWidth: 48
                                 implicitHeight: 48
-                                radius: 8
+                                radius: Metrics.radiusControl
                                 color: "transparent"
 
                                 Image {

@@ -18,7 +18,7 @@ Rectangle {
 
     Layout.fillWidth: true
     implicitHeight: Metrics.fontSecondary + 12  // label plus 6px above and below
-    radius: 10  // segment radius 8 plus the 2px inset, so corners stay concentric
+    radius: Metrics.radiusControl + 2  // segment radius plus the 2px inset, so corners stay concentric
     color: Colors.alpha(Colors.text, 0.05)
 
     Row {
@@ -33,7 +33,7 @@ Rectangle {
 
                 width: (root.width - 4) / root.model.length
                 height: root.height - 4
-                radius: 8
+                radius: Metrics.radiusControl
                 color: Colors.alpha(Colors.text, selected ? 0.12 : (ma.containsMouse ? 0.07 : 0))
                 Behavior on color { ColorAnimation { duration: Metrics.durationFast } }
 

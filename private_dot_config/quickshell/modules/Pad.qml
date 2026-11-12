@@ -106,7 +106,7 @@ Item {
         x: (parent.width - width) / 2
         width: root.cardWidth
         height: inner.implicitHeight + Metrics.padPaddingTop + Metrics.padPadding
-        radius: Metrics.padRadius
+        radius: Metrics.radiusLarge
         // Accent border = "this surface has the compositor's focus", which
         // the pad genuinely does now (shell.qml holds a HyprlandFocusGrab
         // for as long as it's open). It's the only surface that wears it —
