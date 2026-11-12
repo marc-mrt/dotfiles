@@ -320,10 +320,11 @@ ColumnLayout {
                             // a screenshot notification from towering over its
                             // text. Hidden until the pixels actually load (the
                             // image URL can outlive its source), so a dead
-                            // image leaves no empty frame; the header's app
-                            // icon is the only icon either way.
+                            // image leaves no empty frame. Only content images
+                            // get here (Notifications.contentImageOf); the
+                            // header's app icon is the one identity icon.
                             ClippingRectangle {
-                                visible: !!msgRow.modelData.image && thumb.status === Image.Ready
+                                visible: !!Notifications.contentImageOf(msgRow.modelData) && thumb.status === Image.Ready
                                 Layout.alignment: Qt.AlignTop
                                 implicitWidth: 48
                                 implicitHeight: 48
@@ -333,7 +334,7 @@ ColumnLayout {
                                 Image {
                                     id: thumb
                                     anchors.fill: parent
-                                    source: msgRow.modelData.image ?? ""
+                                    source: Notifications.contentImageOf(msgRow.modelData)
                                     fillMode: Image.PreserveAspectCrop
                                     asynchronous: true
                                 }

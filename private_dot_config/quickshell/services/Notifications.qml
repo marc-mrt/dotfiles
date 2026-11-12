@@ -382,6 +382,18 @@ QtObject {
         return ""
     }
 
+    // The line thumbnail is for content (avatar, screenshot, album art) only.
+    // Many apps send their own icon as `image`, which would show a second
+    // identity icon next to the header's. Computed from the entry's stored
+    // fields at read time, so entries persisted before this rule existed
+    // follow it too.
+    function contentImageOf(entry) {
+        const img = entry.image || ""
+        if (!img || img.startsWith("image://icon/") || img === entry.appIcon)
+            return ""
+        return img
+    }
+
     property NotificationServer server: NotificationServer {
         // true (also the default) is what lets live notifications — and so
         // their action buttons — survive a reload. It was false because a
