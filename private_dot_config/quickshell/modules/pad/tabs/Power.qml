@@ -1,11 +1,11 @@
 import QtQuick
 import QtQuick.Layouts
-import "../../config"
-import "../../services"
-import "../ui" as W
+import "../../../config"
+import "../../../services"
+import "../../ui" as W
 
-// Session actions, embedded in the Settings tab (modules/pad/tabs/Settings.qml)
-// now that the standalone power tab and its chip are gone.
+// Tab content only — embedded inline under the power chip in the pad
+// overview (see modules/pad/Overview.qml).
 //
 // Lock and suspend are recoverable, so they run on the first click. The
 // other three end the session, so the first click arms the row as an action
@@ -37,8 +37,9 @@ ColumnLayout {
         PadState.close()
     }
 
+    W.TabHeader { title: "Power" }
+
     W.Section {
-        W.SectionLabel { text: "POWER" }
 
         Repeater {
             model: [

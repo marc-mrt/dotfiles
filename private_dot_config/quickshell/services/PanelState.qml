@@ -3,7 +3,7 @@ import QtQuick
 
 // Which overview tab is expanded, if any: a widget name
 // (network/bluetooth/brightness/volume/media), "calendar", "search",
-// "system", "settings", or "".
+// "system", "settings", "power", or "".
 // Tab-like and exclusive — picking a different one swaps which is expanded
 // rather than stacking them.
 //
