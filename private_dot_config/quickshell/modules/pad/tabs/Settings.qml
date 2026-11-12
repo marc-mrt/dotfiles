@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import "../../../config"
 import "../../../services"
 import "../../ui" as W
+import ".." as Pad
 
 // Tab content only — embedded inline under the Settings chip in the pad
 // overview (see modules/pad/Overview.qml), chrome lives in its wrapper.
@@ -63,4 +64,6 @@ ColumnLayout {
             }
         }
     }
+
+    Pad.PowerSection {}
 }

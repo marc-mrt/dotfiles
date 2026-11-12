@@ -33,7 +33,7 @@ ColumnLayout {
         { id: "system", name: "System", target: "system" },
         { id: "settings", name: "Settings", target: "settings" },
         { id: "media", name: "Media", target: "media" },
-        { id: "power", name: "Power", target: "power" }
+        { id: "power", name: "Power", target: "settings" }
     ]
 
     // Session actions are results only while you are searching for them —
