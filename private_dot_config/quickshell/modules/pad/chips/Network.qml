@@ -12,6 +12,8 @@ W.StatusChip {
         : Network.activeSignal >= 45 ? "\u{F0925}"
         : Network.activeSignal >= 20 ? "\u{F0922}"
         : "\u{F092F}"
+    // No ethernet and no wifi link (radio off or not associated).
+    alert: !Network.ethernetConnected && (!Network.wifiEnabled || !Network.connected)
     active: PanelState.isInlineOpen("network")
     onClicked: PanelState.toggleInline("network")
 }

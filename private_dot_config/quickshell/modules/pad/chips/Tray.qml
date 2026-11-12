@@ -39,6 +39,8 @@ RowLayout {
             IconImage {
                 anchors.centerIn: parent
                 source: trayItem.modelData.icon
+                opacity: ma.containsMouse ? 1.0 : 0.6
+                Behavior on opacity { NumberAnimation { duration: Metrics.durationFast } }
                 implicitSize: 19
             }
 
