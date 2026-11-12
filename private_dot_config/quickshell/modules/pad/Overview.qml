@@ -81,6 +81,11 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 10
 
+            W.StatusChip {
+                text: "\u{F0425}"
+                active: PanelState.isInlineOpen("power")
+                onClicked: PanelState.toggleInline("power")
+            }
             // The one chip with no live state to render: a static gear
             // and a tab name, so it lives here rather than in a file of
             // its own alongside the five that actually track something.
@@ -88,11 +93,6 @@ ColumnLayout {
                 text: "\u{F013}"
                 active: PanelState.isInlineOpen("settings")
                 onClicked: PanelState.toggleInline("settings")
-            }
-            W.StatusChip {
-                text: "\u{F0425}"
-                active: PanelState.isInlineOpen("power")
-                onClicked: PanelState.toggleInline("power")
             }
             W.MiniMetrics {
                 cpu: SystemStats.cpuPercent
