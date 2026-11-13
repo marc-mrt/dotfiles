@@ -190,6 +190,7 @@ ColumnLayout {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             spacing: 0
+            C.Recording {}
             C.Media {}
             C.Network {}
             C.Bluetooth {}
