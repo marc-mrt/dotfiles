@@ -14,7 +14,7 @@ setup() {
   export HOME=$T/home XDG_RUNTIME_DIR=$T/run LOG=$T/log
   mkdir -p "$HOME" "$XDG_RUNTIME_DIR" "$T/bin"
   : > "$LOG"
-  unset QS_FAIL SLURP_FAIL
+  unset QS_FAIL SLURP_FAIL WF_FAIL
   # Stubs log "<name> <argv>" and, where it matters, behave.
   for t in wl-copy notify-send; do
     printf '#!/bin/sh\necho "%s $*" >> "$LOG"\ncat >/dev/null 2>&1 </dev/null\n' "$t" > "$T/bin/$t"
@@ -47,6 +47,7 @@ S
   cat > "$T/bin/wf-recorder" <<'S'
 #!/bin/bash
 echo "wf-recorder $*" >> "$LOG"
+[ -n "${WF_FAIL:-}" ] && exit 1
 while [ $# -gt 0 ]; do [ "$1" = -f ] && f=$2; shift; done
 echo mp4 > "$f"
 trap 'echo "wf-recorder got INT" >> "$LOG"; exit 0' INT
@@ -62,7 +63,7 @@ bash "$script" shot screen; rc=$?
 png=$(ls "$HOME"/Pictures/Screenshots/Screenshot_*.png 2>/dev/null | head -n1)
 check "shot screen exits 0"                "[ $rc -eq 0 ]"
 check "shot screen saves a png"            "[ -n '$png' ]"
-check "shot screen targets focused monitor" "grep -q '^grim -o HDMI-A-1 ' '$LOG'"
+check "shot screen targets focused monitor" "[ \"\$(grep '^grim ' '$LOG')\" = 'grim -o HDMI-A-1 $png' ]"
 check "shot screen copies to clipboard"    "grep -q '^wl-copy' '$LOG'"
 check "shot screen sends thumbnail"        "grep -qxF 'qs ipc call capture thumbnail $png' '$LOG'"
 check "shot screen no notify-send on success" "! grep -q '^notify-send' '$LOG'"
@@ -77,13 +78,16 @@ check "cancelled area calls no grim/qs/notify" "! grep -qE '^(grim|qs|notify-sen
 # --- shot area, selected: slurp without -r, fed window boxes
 setup
 bash "$script" shot area
+png=$(ls "$HOME"/Pictures/Screenshots/Screenshot_*.png 2>/dev/null | head -n1)
 check "area slurp has no -r"               "grep -qx 'slurp ' '$LOG'"
-check "area grim gets the geometry"        "grep -q '^grim -g 10,20 300x200 ' '$LOG'"
+check "area grim gets the geometry"        "[ \"\$(grep '^grim ' '$LOG')\" = 'grim -g 10,20 300x200 $png' ]"
 check "area boxes only from visible workspaces" "[ \"\$(cat '$LOG.slurp-stdin')\" = \"\$(printf '0,0 100x50\n5,6 70x80')\" ]"
 
 # --- shot window
 setup
 bash "$script" shot window
+png=$(ls "$HOME"/Pictures/Screenshots/Screenshot_*.png 2>/dev/null | head -n1)
+check "window grim argv is exactly -g geom file" "[ \"\$(grep '^grim ' '$LOG')\" = 'grim -g 10,20 300x200 $png' ]"
 check "window passes -r to slurp"          "grep -qx 'slurp -r' '$LOG'"
 check "window boxes on stdin"              "grep -qx '5,6 70x80' '$LOG.slurp-stdin'"
 
@@ -101,7 +105,7 @@ check "status idle before recording"       "[ \"\$(bash '$script' status)\" = id
 bash "$script" record screen; rc=$?
 check "record exits 0"                     "[ $rc -eq 0 ]"
 check "record creates pidfile"             "[ -s '$pid' ]"
-check "record starts on focused monitor"   "grep -q '^wf-recorder.* -o HDMI-A-1' '$LOG'"
+check "record starts on focused monitor"   "grep -qE '^wf-recorder -o HDMI-A-1 -f $HOME/Videos/Screencasts/Recording_.*\.mp4\$' '$LOG'"
 check "record calls recordingStarted"      "grep -qE '^qs ipc call capture recordingStarted [0-9]+$' '$LOG'"
 check "status reports recording"           "bash '$script' status | grep -qE '^recording [0-9]+$'"
 wpid=$(head -n1 "$pid")
@@ -115,9 +119,24 @@ check "stop removes pidfile"               "[ ! -e '$pid' ]"
 check "status idle after stop"             "[ \"\$(bash '$script' status)\" = idle ]"
 check "only one wf-recorder was started"   "[ \$(grep -c '^wf-recorder -' '$LOG') -eq 1 ]"
 
-# --- explicit stop with nothing recording is harmless
+# --- record area: exact wf-recorder argv
+setup
+bash "$script" record area
+check "area record argv is exactly -g geom -f file" "grep -qE '^wf-recorder -g 10,20 300x200 -f $HOME/Videos/Screencasts/Recording_.*\.mp4\$' '$LOG'"
+bash "$script" stop
+
+# --- wf-recorder dies immediately: no recording state, user told
+setup; export WF_FAIL=1
+bash "$script" record screen; rc=$?
+check "failed record exits non-zero"       "[ $rc -ne 0 ]"
+check "failed record never says recordingStarted" "! grep -q 'recordingStarted' '$LOG'"
+check "failed record leaves no pidfile"    "[ ! -e '$XDG_RUNTIME_DIR/capture-record.pid' ]"
+check "failed record notifies"             "grep -q '^notify-send' '$LOG'"
+
+# --- explicit stop with nothing recording clears a stale shell indicator
 setup
 bash "$script" stop; rc=$?
 check "stop while idle exits 0"            "[ $rc -eq 0 ]"
+check "stop while idle tells shell recordingStopped" "grep -qxF 'qs ipc call capture recordingStopped ' '$LOG'"
 
 [ $fails -eq 0 ] && echo "all passed" || { echo "$fails failed"; exit 1; }
