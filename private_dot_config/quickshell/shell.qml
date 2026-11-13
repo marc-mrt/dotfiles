@@ -2,6 +2,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import "./modules"
 import "./services"
@@ -37,6 +38,29 @@ ShellRoot {
             if (!PadState.shown)
                 PadState.toggle()
             PanelState.inlineOpen = "clipboard"
+        }
+    }
+
+    // Capture (services/Capture.qml). The keybind toggles the toolbar; the
+    // `capture` script calls the other three back as its work lands, which
+    // is the only way the shell learns a file was saved or a recording
+    // began or ended (contract: the script owns those processes, not us).
+    IpcHandler {
+        target: "capture"
+        function toggleToolbar(): void {
+            Capture.toggleToolbar()
+        }
+        function stopRecording(): void {
+            Capture.stopRecording()
+        }
+        function thumbnail(path: string): void {
+            Capture.showThumbnail(path)
+        }
+        function recordingStarted(epoch: string): void {
+            Capture.recordingStarted(epoch)
+        }
+        function recordingStopped(path: string): void {
+            Capture.recordingStopped(path)
         }
     }
 
@@ -153,6 +177,94 @@ ShellRoot {
             id: notifContent
             anchors.fill: parent
             anchors.margins: notifWin.slack
+        }
+    }
+
+    // Capture toolbar — bottom-centre like the OSD, but on the focused
+    // monitor only and with exclusive keyboard focus: it is a modal pick
+    // (Esc, Enter, arrows), so typing must not leak to the window under it.
+    // Overlay layer so it sits above the pad and fullscreen windows alike.
+    PanelWindow {
+        id: captureToolbarWin
+        screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name)
+            ?? Quickshell.screens[0]
+        visible: Capture.toolbarShown
+
+        anchors.bottom: true
+        margins.bottom: 64
+        implicitWidth: captureToolbar.implicitWidth
+        implicitHeight: captureToolbar.implicitHeight
+        exclusiveZone: 0
+        color: "transparent"
+
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+
+        W.Card {
+            anchors.fill: parent
+
+            CaptureToolbar {
+                id: captureToolbar
+                anchors.fill: parent
+            }
+        }
+    }
+
+    // Capture thumbnail — bottom-right, where macOS puts it, which is also
+    // where notifWin lives. Rather than fight over the corner it stacks
+    // just above the notification stack while that is mapped, so a
+    // screenshot taken while a notification is showing hides neither.
+    // Unfocusable for the same reason notifWin is.
+    PanelWindow {
+        id: captureThumbWin
+        screen: Quickshell.screens[0]
+        visible: Capture.thumbnailPath !== ""
+
+        anchors {
+            bottom: true
+            right: true
+        }
+        margins.bottom: 12 + (notifWin.visible ? notifWin.implicitHeight + 8 : 0)
+        margins.right: 12
+        implicitWidth: captureThumb.implicitWidth
+        implicitHeight: captureThumb.implicitHeight
+        exclusiveZone: 0
+        focusable: false
+        color: "transparent"
+
+        WlrLayershell.layer: WlrLayer.Overlay
+
+        CaptureThumbnail {
+            id: captureThumb
+            anchors.fill: parent
+        }
+    }
+
+    // Recording indicator — top-right, the spot a menu-bar stop button
+    // would occupy if there were a bar. Overlay layer so a fullscreen
+    // window can't hide the fact that the screen is being recorded.
+    PanelWindow {
+        id: recordingWin
+        screen: Quickshell.screens[0]
+        visible: Capture.recording
+
+        anchors {
+            top: true
+            right: true
+        }
+        margins.top: 12
+        margins.right: 12
+        implicitWidth: recordingPill.implicitWidth
+        implicitHeight: recordingPill.implicitHeight
+        exclusiveZone: 0
+        focusable: false
+        color: "transparent"
+
+        WlrLayershell.layer: WlrLayer.Overlay
+
+        RecordingIndicator {
+            id: recordingPill
+            anchors.fill: parent
         }
     }
 
