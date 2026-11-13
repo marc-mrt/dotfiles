@@ -19,13 +19,17 @@ hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd("qs ipc call pad toggleWindows"))
 hl.bind(mainMod .. " + SHIFT + Tab", hl.dsp.exec_cmd("qs ipc call pad toggleWindowsBack"))
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("qs ipc call pad openClipboard"))
 
--- Screenshots (grim + slurp): saved to ~/Pictures/Screenshots and copied.
--- Print / SUPER+SHIFT+S = region, SHIFT+Print = whole screen.
-local shot = [[sh -c 'd=~/Pictures/Screenshots; mkdir -p "$d"; f="$d/$(date +%F_%H-%M-%S).png"; grim GEOM "$f" && wl-copy < "$f" && notify-send -i "$f" Screenshot "Saved and copied"']]
-local region = shot:gsub("GEOM", function() return [[-g "$(slurp)"]] end)
-hl.bind("Print",                   hl.dsp.exec_cmd(region))
-hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd(region))
-hl.bind("SHIFT + Print",           hl.dsp.exec_cmd((shot:gsub("GEOM ", ""))))
+-- Capture: everything goes through ~/.local/bin/capture (grim/slurp/wf-recorder).
+-- Print / SUPER+SHIFT+S = area, SHIFT+Print = screen, like macOS:
+-- SUPER+CTRL+3 = screen, +4 = area, +5 = toolbar (window/record/delay), +Escape = stop recording.
+local capture = "~/.local/bin/capture"
+hl.bind("Print",                          hl.dsp.exec_cmd(capture .. " shot area"))
+hl.bind(mainMod .. " + SHIFT + S",        hl.dsp.exec_cmd(capture .. " shot area"))
+hl.bind("SHIFT + Print",                  hl.dsp.exec_cmd(capture .. " shot screen"))
+hl.bind(mainMod .. " + CTRL + 3",         hl.dsp.exec_cmd(capture .. " shot screen"))
+hl.bind(mainMod .. " + CTRL + 4",         hl.dsp.exec_cmd(capture .. " shot area"))
+hl.bind(mainMod .. " + CTRL + 5",         hl.dsp.exec_cmd("qs ipc call capture toggleToolbar"))
+hl.bind(mainMod .. " + CTRL + Escape",    hl.dsp.exec_cmd(capture .. " stop"))
 
 -- Window management
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())

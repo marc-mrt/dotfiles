@@ -52,6 +52,9 @@ README.md
 .config/regarde
 .config/regarde/**
 
+# Test for dot_local/bin/executable_capture; lives beside it, must not install into ~/.local/bin
+.local/bin/capture.test.sh
+
 # User space
 **/.luarc.json
 
