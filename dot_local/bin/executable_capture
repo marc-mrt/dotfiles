@@ -1,1 +1,92 @@
 #!/usr/bin/env bash
+# capture shot|record <screen|window|area> [--delay N] | stop | status
+# Screenshots and screen recordings for Hyprland; the Quickshell capture
+# service is told what happened over `qs ipc call capture ...`.
+set -u
+
+pidfile=${XDG_RUNTIME_DIR:-/tmp}/capture-record.pid
+
+# Tell the shell; if it isn't running, a plain notification is the fallback.
+# $1 = ipc fn, $2 = arg, $3 = notify-send summary, $4 = optional icon
+tell() {
+  qs ipc call capture "$1" "$2" >/dev/null 2>&1 && return 0
+  notify-send ${4:+-i "$4"} "$3" "${2##*/}"
+}
+
+# Boxes of mapped windows on the visible workspaces, so slurp can snap to them.
+boxes() {
+  local ws
+  ws=$(hyprctl monitors -j | jq -c '[.[].activeWorkspace.id]')
+  hyprctl clients -j | jq -r --argjson ws "$ws" \
+    '.[] | select(.mapped and (.workspace.id as $w | $ws | index($w))) | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"'
+}
+
+# Sets $geom (empty = whole monitor) and $mon. Returns 1 if the user cancelled.
+pick() {
+  geom=
+  mon=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')
+  case $1 in
+    screen) ;;
+    window) geom=$(boxes | slurp -r) || return 1 ;;
+    area)   geom=$(boxes | slurp) || return 1 ;;
+    *) echo "capture: unknown target '$1'" >&2; exit 2 ;;
+  esac
+}
+
+shot() {
+  pick "$1" || return 0
+  sleep "$delay"
+  local dir=$HOME/Pictures/Screenshots f
+  mkdir -p "$dir"
+  f=$dir/$(date +Screenshot_%F_%H-%M-%S.png)
+  grim ${geom:+-g "$geom"} ${geom:--o "$mon"} "$f" || return 1
+  wl-copy < "$f"
+  tell thumbnail "$f" Screenshot "$f"
+}
+
+alive() { [ -s "$pidfile" ] && kill -0 "$(head -n1 "$pidfile")" 2>/dev/null; }
+
+stop() {
+  alive || { rm -f "$pidfile"; return 0; }
+  local pid f
+  { read -r pid; read -r _; read -r f; } < "$pidfile"
+  kill -INT "$pid"
+  # Not our child (started by another invocation), so poll instead of wait.
+  while kill -0 "$pid" 2>/dev/null; do sleep 0.1; done
+  rm -f "$pidfile"
+  tell recordingStopped "$f" "Recording saved"
+}
+
+record() {
+  alive && { stop; return; }
+  pick "$1" || return 0
+  sleep "$delay"
+  local dir=$HOME/Videos/Screencasts f now
+  mkdir -p "$dir"
+  f=$dir/$(date +Recording_%F_%H-%M-%S.mp4)
+  # Job control gives wf-recorder its own group and a live SIGINT handler;
+  # plain `&` in a script would start it with SIGINT ignored.
+  set -m
+  wf-recorder ${geom:+-g "$geom"} ${geom:--o "$mon"} -f "$f" </dev/null >/dev/null 2>&1 &
+  now=$(date +%s)
+  printf '%s\n%s\n%s\n' $! "$now" "$f" > "$pidfile"
+  set +m
+  tell recordingStarted "$now" "Recording started"
+}
+
+status() {
+  if alive; then echo "recording $(sed -n 2p "$pidfile")"; else echo idle; fi
+}
+
+cmd=${1:-}; shift || true
+target=${1:-screen}; [ $# -gt 0 ] && shift
+delay=0
+[ "${1:-}" = --delay ] && delay=${2:-0}
+
+case $cmd in
+  shot)   shot "$target" ;;
+  record) record "$target" ;;
+  stop)   stop ;;
+  status) status ;;
+  *) echo "usage: capture shot|record <screen|window|area> [--delay N] | stop | status" >&2; exit 2 ;;
+esac

@@ -77,7 +77,7 @@ check "cancelled area calls no grim/qs/notify" "! grep -qE '^(grim|qs|notify-sen
 # --- shot area, selected: slurp without -r, fed window boxes
 setup
 bash "$script" shot area
-check "area slurp has no -r"               "grep -qx 'slurp' '$LOG'"
+check "area slurp has no -r"               "grep -qx 'slurp ' '$LOG'"
 check "area grim gets the geometry"        "grep -q '^grim -g 10,20 300x200 ' '$LOG'"
 check "area boxes only from visible workspaces" "[ \"\$(cat '$LOG.slurp-stdin')\" = \"\$(printf '0,0 100x50\n5,6 70x80')\" ]"
 
@@ -113,7 +113,7 @@ check "process is gone"                    "! kill -0 $wpid 2>/dev/null"
 check "stop calls recordingStopped with mp4" "[ -n '$mp4' ] && grep -qxF 'qs ipc call capture recordingStopped $mp4' '$LOG'"
 check "stop removes pidfile"               "[ ! -e '$pid' ]"
 check "status idle after stop"             "[ \"\$(bash '$script' status)\" = idle ]"
-check "only one wf-recorder was started"   "[ \$(grep -c '^wf-recorder ' '$LOG') -eq 1 ]"
+check "only one wf-recorder was started"   "[ \$(grep -c '^wf-recorder -' '$LOG') -eq 1 ]"
 
 # --- explicit stop with nothing recording is harmless
 setup
