@@ -40,7 +40,7 @@ hl.config({
         blur = {
             enabled            = true,
             size               = 6,
-            passes             = 3,
+            passes             = 2,
             new_optimizations  = true,
             ignore_opacity     = true,
             xray               = false,
@@ -61,7 +61,7 @@ hl.config({
         kb_layout  = "us",
         kb_variant = "",
         kb_model   = "",
-        kb_options = "",
+        kb_options = "caps:super", -- Caps Lock acts as Super, the intended mainMod
         kb_rules   = "",
 
         follow_mouse = 1,
@@ -88,7 +88,11 @@ hl.config({
     },
 
     cursor = {
-        no_hardware_cursors = true,
+        no_hardware_cursors = false,
+    },
+
+    render = {
+        direct_scanout = 2, -- scanout for games only
     },
 })
 
