@@ -176,7 +176,10 @@ QtObject {
                     })
                 }
                 out.sort((a, b) => b.signal - a.signal)
-                root.networks = out
+                // Only on a real change: a new array makes the Repeater
+                // rebuild every row, wiping an open password field.
+                if (JSON.stringify(out) !== JSON.stringify(root.networks))
+                    root.networks = out
                 root.activeSsid = active
                 root.activeSignal = activeSignal
             }
@@ -227,7 +230,9 @@ QtObject {
                     })
                 }
                 out.sort((a, b) => b.priority - a.priority || a.name.localeCompare(b.name))
-                root.known = out
+                // Same reason as `networks` in listProc.
+                if (JSON.stringify(out) !== JSON.stringify(root.known))
+                    root.known = out
                 if (out.length > 0) {
                     // Bare uuids: nmcli takes several, and a "uuid" keyword
                     // would only name the next one.
@@ -250,7 +255,9 @@ QtObject {
                     if (l.length >= 2)
                         ssids[l[0]] = l.slice(1).join("\n")
                 }
-                root.known = root.known.map(k => Object.assign({}, k, { ssid: ssids[k.uuid] || k.ssid }))
+                const next = root.known.map(k => Object.assign({}, k, { ssid: ssids[k.uuid] || k.ssid }))
+                if (JSON.stringify(next) !== JSON.stringify(root.known))
+                    root.known = next
             }
         }
     }

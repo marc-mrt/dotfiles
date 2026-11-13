@@ -48,27 +48,32 @@ ColumnLayout {
         { id: "poweroff", name: "Power off", glyph: "\u{F0425}", verb: "power off", keywords: ["shutdown", "shut down"] }
     ]
 
+    // The item lists below are built once per source change, not per
+    // keystroke: they must never read root.query, or every character would
+    // re-run Hypr.iconForClass / Quickshell.iconPath for every entry. Only
+    // the cheap Score.rank() call depends on the query.
+
     // Window match is on title OR class, so "firefox" finds a window whose
     // title is the page name.
-    readonly property var windowResults: Score.rank(
-        Hyprland.toplevels.values.map(t => {
-            const cls = (t.lastIpcObject && t.lastIpcObject.class) || ""
-            return {
-                id: t.address, kind: "window", toplevel: t,
-                name: t.title || cls || "Window", alt: cls,
-                iconPath: Hypr.iconForClass(cls)
-            }
-        }), root.query, {}, 5)
+    readonly property var windowItems: Hyprland.toplevels.values.map(t => {
+        const cls = (t.lastIpcObject && t.lastIpcObject.class) || ""
+        return {
+            id: t.address, kind: "window", toplevel: t,
+            name: t.title || cls || "Window", alt: cls,
+            iconPath: Hypr.iconForClass(cls)
+        }
+    })
+    readonly property var windowResults: Score.rank(root.windowItems, root.query, {}, 5)
 
+    readonly property var appItems: DesktopEntries.applications.values
+        .filter(e => !e.noDisplay)
+        .map(e => ({
+            id: e.id, kind: "app", entry: e, name: e.name,
+            generic: e.genericName ?? "", keywords: e.keywords ?? [],
+            iconPath: Quickshell.iconPath(e.icon, "")
+        }))
     // Counts are read here so a launch re-ranks the next search.
-    readonly property var appResults: Score.rank(
-        DesktopEntries.applications.values
-            .filter(e => !e.noDisplay)
-            .map(e => ({
-                id: e.id, kind: "app", entry: e, name: e.name,
-                generic: e.genericName ?? "", keywords: e.keywords ?? [],
-                iconPath: Quickshell.iconPath(e.icon, "")
-            })), root.query, LaunchHistory.counts, 8)
+    readonly property var appResults: Score.rank(root.appItems, root.query, LaunchHistory.counts, 8)
 
     readonly property var shortcutResults: Score.rank(
         root.shortcuts.map(s => ({ id: s.id, kind: "panel", name: s.name, iconPath: "", target: s.target })),
@@ -207,14 +212,17 @@ ColumnLayout {
         // The hidden TextInput owns the real cursor; this one just shows
         // where typing lands, blinking like a normal field.
         Rectangle {
+            id: cursor
             Layout.preferredWidth: 2
             Layout.preferredHeight: Metrics.fontBody + 2
             color: Colors.accent
-            SequentialAnimation on opacity {
-                loops: Animation.Infinite
+            // Discrete steps: a smooth fade repainted every frame for a blink.
+            Timer {
+                interval: 500
                 running: PadState.shown
-                NumberAnimation { to: 0; duration: 500 }
-                NumberAnimation { to: 1; duration: 500 }
+                repeat: true
+                onRunningChanged: if (running) cursor.visible = true
+                onTriggered: cursor.visible = !cursor.visible
             }
         }
         Text {

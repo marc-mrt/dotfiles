@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Layouts
-import QtQuick.Effects
 import Quickshell
 import Quickshell.Widgets
 import Quickshell.Wayland
@@ -151,9 +150,7 @@ Item {
                                 height: Math.max(8, tile.sz[1] * group.scale - Metrics.switcherTileGap)
 
                                 // Snapshot at the very back, clipped to the
-                                // tile's rounded corners, with a very slight
-                                // blur so it reads as a positional cue
-                                // rather than a precise mirror. A plain
+                                // tile's rounded corners. A plain
                                 // Rectangle border drawn on top of a
                                 // full-bleed child would get covered by it
                                 // (children paint over their parent's own
@@ -170,16 +167,8 @@ Item {
                                     ScreencopyView {
                                         id: shot
                                         anchors.fill: parent
-                                        visible: false
                                         live: false
                                         captureSource: Hypr.waylandHandle(tile.modelData.address)
-                                    }
-                                    MultiEffect {
-                                        anchors.fill: parent
-                                        source: shot
-                                        blurEnabled: true
-                                        blur: 0.15
-                                        blurMax: 12
                                     }
                                 }
 

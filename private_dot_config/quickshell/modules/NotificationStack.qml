@@ -46,8 +46,15 @@ ColumnLayout {
     property real now: Date.now()
     Timer {
         interval: 1000
-        running: true
+        // `now` only matters while some group can still expire: both
+        // consumers (card visibility, waiting pill) are time-independent
+        // once every expiresAt is past, and critical / pad-shown don't read
+        // it. Reading `root.now` here re-evaluates each tick, so the timer
+        // stops itself after the last expiry and restarts when a group
+        // arrives or the pad closes; triggeredOnStart refreshes a stale `now`.
+        running: !PadState.shown && Notifications.groups.some(g => root.now < g.expiresAt)
         repeat: true
+        triggeredOnStart: true
         onTriggered: root.now = Date.now()
     }
 
@@ -325,7 +332,8 @@ ColumnLayout {
                             // get here (Notifications.contentImageOf); the
                             // header's app icon is the one identity icon.
                             ClippingRectangle {
-                                visible: !!Notifications.contentImageOf(msgRow.modelData) && thumb.status === Image.Ready
+                                readonly property var contentImage: Notifications.contentImageOf(msgRow.modelData)
+                                visible: !!contentImage && thumb.status === Image.Ready
                                 Layout.alignment: Qt.AlignTop
                                 implicitWidth: 48
                                 implicitHeight: 48
@@ -335,7 +343,9 @@ ColumnLayout {
                                 Image {
                                     id: thumb
                                     anchors.fill: parent
-                                    source: Notifications.contentImageOf(msgRow.modelData)
+                                    source: parent.contentImage || ""
+                                    // 2x the 48px box for HiDPI; avoids decoding full screenshots.
+                                    sourceSize: Qt.size(96, 96)
                                     fillMode: Image.PreserveAspectCrop
                                     asynchronous: true
                                 }

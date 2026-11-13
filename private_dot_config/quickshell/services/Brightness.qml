@@ -81,10 +81,16 @@ QtObject {
         }
     }
 
+    // The poll only catches changes made outside the shell (the monitor's
+    // own buttons); those can wait until the pad opens, since changes made
+    // through the shell already report() immediately. triggeredOnStart
+    // reads fresh on open.
+    // Startup read comes from detectProc, which calls refresh() itself.
     property Timer poll: Timer {
         interval: 5000
-        running: true
+        running: PadState.shown
         repeat: true
+        triggeredOnStart: true
         onTriggered: {
             if (!root.level.busy)
                 root.refresh()

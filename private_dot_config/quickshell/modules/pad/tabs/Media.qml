@@ -64,6 +64,7 @@ ColumnLayout {
                 Image {
                     anchors.fill: parent
                     source: root.player ? root.player.trackArtUrl : ""
+                    sourceSize: Qt.size(144, 144)  // 2x the 72px box for HiDPI
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                 }

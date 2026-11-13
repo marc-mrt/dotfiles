@@ -12,6 +12,12 @@ ColumnLayout {
 
     // SSID of the network whose inline password prompt is open ("" = none).
     property string pwPromptSsid: ""
+    // Text typed into that prompt. Held here, not in the delegate: a poll that
+    // changes signal strengths rebuilds the Nearby rows, and a delegate-owned
+    // field would lose what is being typed.
+    property string pwText: ""
+    // Opening, switching or closing the prompt always starts from empty.
+    onPwPromptSsidChanged: pwText = ""
     // UUID of the saved network whose password row is open ("" = none).
     property string pskRowUuid: ""
 
@@ -46,6 +52,8 @@ ColumnLayout {
                 delegate: ColumnLayout {
                     id: entry
                     required property var modelData
+                    // Looked up once per row; read by the click handler and the lock icon.
+                    readonly property string savedUuid: Network.knownUuid(modelData.ssid)
                     Layout.fillWidth: true
                     spacing: 0
 
@@ -67,7 +75,7 @@ ColumnLayout {
                         onClicked: {
                             if (entry.modelData.active)
                                 Network.disconnectFrom(entry.modelData.ssid)
-                            else if (entry.modelData.secured && Network.knownUuid(entry.modelData.ssid).length === 0)
+                            else if (entry.modelData.secured && entry.savedUuid.length === 0)
                                 root.pwPromptSsid = (root.pwPromptSsid === entry.modelData.ssid
                                     ? "" : entry.modelData.ssid)
                             else
@@ -77,7 +85,7 @@ ColumnLayout {
                         Text {
                             visible: entry.modelData.secured
                             // lock-check when a saved profile holds the password
-                            text: Network.knownUuid(entry.modelData.ssid).length > 0 ? "\u{F139A}" : "\u{F033E}"
+                            text: entry.savedUuid.length > 0 ? "\u{F139A}" : "\u{F033E}"
                             color: Colors.alpha(Colors.text, 0.5)
                             font.pixelSize: Metrics.fontSecondary
                         }
@@ -109,6 +117,16 @@ ColumnLayout {
                                 echoMode: TextInput.Password
                                 clip: true
                                 focus: root.pwPromptSsid === entry.modelData.ssid
+                                // Seeded once (not bound) so typing doesn't break it;
+                                // a rebuilt delegate for the open prompt restores the
+                                // text, and `focus` above restores the cursor.
+                                Component.onCompleted: if (root.pwPromptSsid === entry.modelData.ssid) text = root.pwText
+                                onTextChanged: if (root.pwPromptSsid === entry.modelData.ssid) root.pwText = text
+                                Connections {
+                                    target: root
+                                    // Drop text left from an earlier prompt on this row.
+                                    function onPwPromptSsidChanged() { pwInput.text = "" }
+                                }
                                 onAccepted: {
                                     Network.connectTo(entry.modelData.ssid, text)
                                     root.pwPromptSsid = ""

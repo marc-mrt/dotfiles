@@ -9,7 +9,7 @@ import Quickshell.Io
 // slider follow it — matching GNOME/KDE quick-settings behaviour.
 //
 // Volume/mute changes made outside this app (keyboard media keys, other
-// apps) only used to reach the chip via the poll below, so the shell could
+// apps) only used to reach the chip via a poll, so the shell could
 // lag well behind what you just heard change. `pactl subscribe` streams
 // sink change events in real time, so refresh() also runs the instant
 // something else moves the volume.
@@ -260,6 +260,7 @@ QtObject {
     property Process subscribeProc: Process {
         command: ["pactl", "subscribe"]
         running: true
+        onRunningChanged: if (!running) root.resubscribe.start()
         stdout: SplitParser {
             onRead: (line) => {
                 // "sink-input"/"source-output" are per-app streams: they
@@ -270,8 +271,8 @@ QtObject {
                 // change, plug/unplug) still owe the full refresh.
                 // A default sink/source change arrives only as "Event
                 // 'change' on server", with no sink/source in the line;
-                // without this the new default isn't read until the 10s
-                // poll, and the first real change after it is mistaken
+                // without this the new default isn't read until the
+                // next event, and the first real change after it is mistaken
                 // for the sync read.
                 const server = line.includes("server")
                 if (!server && !line.includes("sink") && !line.includes("source"))
@@ -298,17 +299,18 @@ QtObject {
         }
     }
 
-    // Fallback safety net in case the subscribe stream ever dies quietly.
-    // Skips while a write is queued or in flight: refreshing then would
-    // only read back the value we're in the middle of replacing.
-    property Timer poll: Timer {
-        interval: 10000
-        running: true
-        repeat: true
-        triggeredOnStart: true
+    // The subscribe stream is the only refresh trigger after startup, so if
+    // it dies (pipewire-pulse restart, crash) bring it back. The delay keeps
+    // a crash loop from spinning; refresh() on return because events were
+    // missed while it was down.
+    property Timer resubscribe: Timer {
+        interval: 2000
         onTriggered: {
-            if (!root.level.busy && !root.mute.busy)
-                root.refresh()
+            subscribeProc.running = true
+            root.refresh()
         }
     }
+
+    // Initial read; afterwards subscribeProc events drive refreshes.
+    Component.onCompleted: root.refresh()
 }
