@@ -22,12 +22,6 @@ RowLayout {
         Item {
             id: trayItem
             required property var modelData
-            // nm-applet's tray icon duplicates the pad's own Network widget
-            // (pad/chips/Network.qml) — hide it rather than showing
-            // the same status twice.
-            readonly property bool isNmApplet: (trayItem.modelData.id ?? "").toLowerCase().includes("nm-applet")
-
-            visible: !trayItem.isNmApplet
             implicitWidth: 31
             implicitHeight: 31
 

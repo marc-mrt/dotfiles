@@ -179,17 +179,21 @@ QtObject {
                 root.networks = out
                 root.activeSsid = active
                 root.activeSignal = activeSignal
-                root.connected = active.length > 0
             }
         }
     }
 
-    // Any nmcli device of type "ethernet" in the "connected" state — good
-    // enough to tell wired from wireless without needing the interface name.
+    // Link state per device type, from the device itself: the IN-USE mark in
+    // listProc is also set while NetworkManager is still associating or
+    // waiting for secrets, so it can't tell "connected" on its own.
     property Process ethernetProc: Process {
-        command: ["bash", "-c", "nmcli -t -f TYPE,STATE dev status | grep -q '^ethernet:connected' && echo yes || echo no"]
+        command: ["nmcli", "-t", "-f", "TYPE,STATE", "dev", "status"]
         stdout: StdioCollector {
-            onStreamFinished: root.ethernetConnected = text.trim() === "yes"
+            onStreamFinished: {
+                const lines = text.split("\n")
+                root.ethernetConnected = lines.includes("ethernet:connected")
+                root.connected = lines.includes("wifi:connected")
+            }
         }
     }
 
