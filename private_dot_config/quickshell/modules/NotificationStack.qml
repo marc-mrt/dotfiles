@@ -10,9 +10,9 @@ import "./ui" as W
 //
 // Grouped by consecutive arrival, not by app overall — same visual card
 // style a lone toast used to have, but one card per run of same-app
-// notifications: icon + app name in the header, then each message as
-// "<b>summary</b>: body" (a leading "-" only when the group holds more
-// than one message). A second Zen Browser burst after a Ghostty
+// notifications: icon + app name (+ count) + newest time in the header,
+// then each message as a bold summary line over its body, oldest first,
+// split by hairlines. A second Zen Browser burst after a Ghostty
 // notification gets its own card rather than merging back into the first
 // — matches the order things actually arrived in.
 //
@@ -103,14 +103,6 @@ ColumnLayout {
         }
     }
 
-    // summary is plain text per the notification spec — escape it before
-    // wrapping in <b> below. body may legitimately already contain markup
-    // (bodyMarkupSupported: true in services/Notifications.qml), so it's
-    // used as-is.
-    function escapeHtml(s) {
-        return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    }
-
     Repeater {
         model: root.displayGroups
         delegate: W.Card {
@@ -127,7 +119,7 @@ ColumnLayout {
             visible: PadState.shown || cardMa.pressed || card.modelData.critical
                 || (!Notifications.dnd && root.now < card.modelData.expiresAt)
             Layout.preferredWidth: Metrics.notifCardWidth
-            implicitHeight: content.implicitHeight + 20
+            implicitHeight: content.implicitHeight + 28
             // Neutral by default, deliberately NOT accent: an accent border
             // means "this surface holds Hyprland's focus", which is the
             // pad's alone (see modules/Pad.qml). Notifications never take
@@ -280,50 +272,100 @@ ColumnLayout {
                 }
             }
 
+            // Critical marker, not accent (accent means focus). Clipped to the
+            // card's rounded inner edge so the bar can't poke past the corners.
+            ClippingRectangle {
+                visible: card.modelData.critical
+                anchors.fill: parent
+                anchors.margins: 1
+                radius: Metrics.radiusCard - 1
+                color: "transparent"
+                Rectangle {
+                    width: 3
+                    height: parent.height
+                    color: Colors.destructive
+                }
+            }
+
+            // Messages oldest-first for display (the service keeps newest at
+            // [0]; activate/dismiss still get the original array). In the
+            // corner only the newest 2 show, with a "+N more" line on top.
+            readonly property var shownMessages: {
+                const r = [...card.modelData.messages].reverse()
+                return !PadState.shown && r.length > 2 ? r.slice(-2) : r
+            }
+
             ColumnLayout {
                 id: content
                 anchors.fill: parent
-                anchors.margins: 10
-                spacing: 6
+                anchors.margins: 14
+                spacing: 10
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 6
+                    spacing: 8
 
                     IconImage {
                         visible: !!card.modelData.appIcon
-                        implicitSize: 22
+                        implicitSize: 20
                         source: card.modelData.appIcon ?? ""
+                    }
+                    Rectangle {
+                        visible: !card.modelData.appIcon
+                        implicitWidth: 20
+                        implicitHeight: 20
+                        radius: 10
+                        color: Colors.alpha(Colors.text, 0.15)
+                        Text {
+                            anchors.centerIn: parent
+                            text: (card.modelData.appName || "?").charAt(0).toUpperCase()
+                            color: Colors.text
+                            font.pixelSize: Metrics.fontSmall
+                            font.bold: true
+                        }
                     }
                     Text {
                         Layout.fillWidth: true
                         text: card.modelData.appName
-                        color: Colors.text
-                        font.pixelSize: Metrics.fontLarge
-                        font.bold: true
+                            + (card.modelData.messages.length > 1 ? " · " + card.modelData.messages.length : "")
+                        color: Colors.alpha(Colors.text, 0.6)
+                        font.pixelSize: Metrics.fontSmall
                         elide: Text.ElideRight
+                    }
+                    Text {
+                        text: card.modelData.messages[0].time
+                        color: Colors.alpha(Colors.text, 0.5)
+                        font.pixelSize: Metrics.fontSmall
                     }
                 }
 
+                Text {
+                    visible: card.shownMessages.length < card.modelData.messages.length
+                    text: "+" + (card.modelData.messages.length - card.shownMessages.length) + " more"
+                    color: Colors.alpha(Colors.text, 0.5)
+                    font.pixelSize: Metrics.fontSmall
+                }
+
                 Repeater {
-                    model: card.modelData.messages
+                    model: card.shownMessages
                     delegate: ColumnLayout {
                         id: msgRow
                         required property var modelData
+                        required property int index
                         Layout.fillWidth: true
-                        spacing: 2
+                        spacing: 10
+
+                        Rectangle {
+                            visible: msgRow.index > 0
+                            Layout.fillWidth: true
+                            implicitHeight: 1
+                            color: Colors.alpha(Colors.text, 0.08)
+                        }
 
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 6
+                            spacing: 10
 
-                            Text {
-                                visible: card.modelData.messages.length > 1
-                                Layout.alignment: Qt.AlignTop
-                                text: "–"
-                                color: Colors.alpha(Colors.text, 0.5)
-                                font.pixelSize: Metrics.fontLarge
-                            }
                             // Fixed thumbnail, not a full-width preview — keeps
                             // a screenshot notification from towering over its
                             // text. Hidden until the pixels actually load (the
@@ -332,41 +374,55 @@ ColumnLayout {
                             // get here (Notifications.contentImageOf); the
                             // header's app icon is the one identity icon.
                             ClippingRectangle {
+                                id: thumbBox
                                 readonly property var contentImage: Notifications.contentImageOf(msgRow.modelData)
                                 visible: !!contentImage && thumb.status === Image.Ready
                                 Layout.alignment: Qt.AlignTop
-                                implicitWidth: 48
-                                implicitHeight: 48
+                                implicitWidth: 56
+                                implicitHeight: 56
                                 radius: Metrics.radiusControl
                                 color: "transparent"
 
                                 Image {
                                     id: thumb
                                     anchors.fill: parent
-                                    source: parent.contentImage || ""
-                                    // 2x the 48px box for HiDPI; avoids decoding full screenshots.
-                                    sourceSize: Qt.size(96, 96)
+                                    source: thumbBox.contentImage || ""
+                                    // 2x the 56px box for HiDPI; avoids decoding full screenshots.
+                                    sourceSize: Qt.size(112, 112)
                                     fillMode: Image.PreserveAspectCrop
                                     asynchronous: true
                                 }
                             }
                             // Wraps instead of eliding — the card grows taller
-                            // rather than cutting content off.
-                            Text {
+                            // rather than cutting content off, except the
+                            // body in the corner (3 lines).
+                            ColumnLayout {
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignTop
-                                textFormat: Text.RichText
-                                wrapMode: Text.Wrap
-                                text: "<b>" + root.escapeHtml(msgRow.modelData.summary || card.modelData.appName) + "</b>"
-                                    + (msgRow.modelData.body ? ": " + msgRow.modelData.body : "")
-                                color: Colors.alpha(Colors.text, 0.85)
-                                font.pixelSize: Metrics.fontLarge
-                            }
-                            Text {
-                                Layout.alignment: Qt.AlignTop
-                                text: msgRow.modelData.time
-                                color: Colors.alpha(Colors.text, 0.5)
-                                font.pixelSize: Metrics.fontBody
+                                spacing: 2
+
+                                Text {
+                                    visible: !!msgRow.modelData.summary
+                                    Layout.fillWidth: true
+                                    text: msgRow.modelData.summary
+                                    textFormat: Text.PlainText
+                                    wrapMode: Text.Wrap
+                                    color: Colors.text
+                                    font.pixelSize: Metrics.fontLarge
+                                    font.bold: true
+                                }
+                                // StyledText (b, i, u, a) so maximumLineCount works.
+                                Text {
+                                    visible: !!msgRow.modelData.body
+                                    Layout.fillWidth: true
+                                    text: msgRow.modelData.body
+                                    textFormat: Text.StyledText
+                                    wrapMode: Text.Wrap
+                                    maximumLineCount: PadState.shown ? 99999 : 3
+                                    elide: Text.ElideRight
+                                    color: Colors.alpha(Colors.text, 0.7)
+                                    font.pixelSize: Metrics.fontSecondary
+                                }
                             }
                         }
 
