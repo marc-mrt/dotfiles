@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 
 // Screenshots and screen recordings, macOS-style: the capture toolbar picks
 // what to grab, the `capture` script (dot_local/bin/executable_capture) does
@@ -15,6 +16,7 @@ QtObject {
     readonly property string bin: Quickshell.env("HOME") + "/.local/bin/capture"
 
     property bool toolbarShown: false
+    property string toolbarScreen: ""  // monitor name the toolbar was opened on
     property string kind: "shot"    // "shot" | "record"
     property string target: "area"  // "screen" | "window" | "area"
     property int delay: 0           // seconds: 0 | 5 | 10
@@ -42,8 +44,15 @@ QtObject {
     property string thumbnailPath: ""
     readonly property bool thumbnailIsVideo: root.thumbnailPath.endsWith(".mp4")
 
+    // Opening pins the toolbar to the monitor focused right now, and re-asks
+    // the script what state it is in, so a recording started or stopped
+    // outside the shell is picked up.
     function toggleToolbar() {
         root.toolbarShown = !root.toolbarShown
+        if (root.toolbarShown) {
+            root.toolbarScreen = Hyprland.focusedMonitor?.name ?? ""
+            root.statusProc.running = true
+        }
     }
 
     function cycleDelay() {
@@ -65,8 +74,8 @@ QtObject {
     }
 
     function showThumbnail(path) {
-        // Cleared first so a repeat path (the same file re-saved by satty)
-        // still reloads the image and restarts the thumbnail's hide timer.
+        // Cleared first so a repeated path still restarts the thumbnail's
+        // hide timer.
         root.thumbnailPath = ""
         root.thumbnailPath = path
     }
@@ -102,6 +111,8 @@ QtObject {
                 const m = text.trim().match(/^recording (\d+)/)
                 if (m)
                     root.recordingStarted(Number(m[1]))
+                else
+                    root.recording = false
             }
         }
     }

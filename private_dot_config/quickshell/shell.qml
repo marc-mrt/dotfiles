@@ -2,7 +2,6 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Quickshell.Hyprland
 import Quickshell.Wayland
 import "./modules"
 import "./services"
@@ -186,7 +185,7 @@ ShellRoot {
     // Overlay layer so it sits above the pad and fullscreen windows alike.
     PanelWindow {
         id: captureToolbarWin
-        screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name)
+        screen: Quickshell.screens.find(s => s.name === Capture.toolbarScreen)
             ?? Quickshell.screens[0]
         visible: Capture.toolbarShown
 
