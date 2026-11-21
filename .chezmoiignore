@@ -71,6 +71,7 @@ README.md
 .config/hypr/**
 .config/quickshell
 .config/quickshell/**
+.local/bin/capture
 .var
 .var/**
 .local/share/wallpapers
