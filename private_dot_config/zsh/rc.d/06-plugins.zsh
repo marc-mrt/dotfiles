@@ -20,4 +20,4 @@ done
 
 # `zsh -f`: do not rely on the script's #!/bin/zsh shebang (zsh lives elsewhere
 # on some Linux systems).
-znap eval marlonrichert/zcolors 'zsh -f ./zcolors'
+source <(zsh -f ~[marlonrichert/zcolors]/zcolors)
