@@ -40,6 +40,13 @@ ShellRoot {
         }
     }
 
+    IpcHandler {
+        target: "lutris"
+        function toggle(): void {
+            Lutris.toggle()
+        }
+    }
+
     // Capture (services/Capture.qml). The keybind toggles the toolbar; the
     // `capture` script calls the other three back as its work lands, which
     // is the only way the shell learns a file was saved or a recording
@@ -131,6 +138,22 @@ ShellRoot {
         color: "transparent"
 
         WindowSwitcher {
+            anchors.fill: parent
+        }
+    }
+
+    // Library — the same real-toplevel trick as the switcher, with independent state.
+    FloatingWindow {
+        id: lutrisWin
+        screen: Quickshell.screens[0]
+        visible: Lutris.shown
+        title: "quickshell-lutris"
+
+        implicitWidth: lutrisWin.screen.width
+        implicitHeight: lutrisWin.screen.height
+        color: "transparent"
+
+        LutrisPanel {
             anchors.fill: parent
         }
     }

@@ -18,6 +18,7 @@ hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("qs ipc call pad toggleOverview")
 hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd("qs ipc call pad toggleWindows"))
 hl.bind(mainMod .. " + SHIFT + Tab", hl.dsp.exec_cmd("qs ipc call pad toggleWindowsBack"))
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("qs ipc call pad openClipboard"))
+hl.bind(mainMod .. " + G", hl.dsp.exec_cmd("qs ipc call lutris toggle"))
 
 -- Capture: everything goes through ~/.local/bin/capture (grim/slurp/wf-recorder).
 -- Print / SUPER+SHIFT+S = area, SHIFT+Print = screen, like macOS:

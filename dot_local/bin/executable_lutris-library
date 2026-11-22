@@ -1,0 +1,129 @@
+#!/usr/bin/env python3
+# Lutris library for the Library overlay: emit the installed Flatpak Lutris
+# games as JSON with resolved art, or launch one by id.
+# Art overrides live in a cache dir and may be wiped by cache cleaning.
+
+import json
+import os
+import re
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+
+FLATPAK_ID = "net.lutris.Lutris"
+# --no-session-bus: listing returns empty stdout while a normal Lutris
+# client is running, so bypass the session bus.
+LIST_CMD = ["flatpak", "run", "--no-session-bus", FLATPAK_ID, "-o", "-l", "-j"]
+DATA_ROOT = Path.home() / ".var/app" / FLATPAK_ID / "data"
+
+
+def die(msg):
+    print(f"lutris-library: {msg}", file=sys.stderr)
+    sys.exit(1)
+
+
+def overrides_dir():
+    # shortcut: cache location can be wiped by cache cleaners, accept that
+    cache = os.environ.get("XDG_CACHE_HOME", str(Path.home() / ".cache"))
+    return Path(cache) / "quickshell" / "lutris-art"
+
+
+def art_uri(path, kind):
+    return {"url": Path(path).resolve().as_uri(), "kind": kind}
+
+
+def resolve_art(game):
+    slug = game.get("slug")
+    override = overrides_dir() / f"{game['id']}.jpg"
+    if override.is_file():
+        return art_uri(override, "cover")
+    cover = game.get("coverPath")
+    if cover and Path(cover).is_file():
+        return art_uri(cover, "cover")
+    if slug:
+        banner = DATA_ROOT / "lutris" / "banners" / f"{slug}.jpg"
+        if banner.is_file():
+            return art_uri(banner, "banner")
+        icon = DATA_ROOT / "icons" / "hicolor" / "128x128" / "apps" / f"lutris_{slug}.png"
+        if icon.is_file():
+            return art_uri(icon, "icon")
+    return None
+
+
+def validate(game):
+    # QML trusts these fields, so fail here instead of leaking malformed records.
+    if not isinstance(game, dict):
+        die(f"entry {game!r}: not an object")
+    where = f"game id {game.get('id')!r}"
+    id_ = game.get("id")
+    if not isinstance(id_, str) or not id_.isdigit() or int(id_) <= 0:
+        die(f"{where}: id is not a positive integer")
+    if not isinstance(game.get("name"), str) or not game["name"].strip():
+        die(f"{where}: name is not a nonempty string")
+    cover = game.get("coverPath")
+    if cover is not None and not isinstance(cover, str):
+        die(f"{where}: coverPath is not null or string")
+    slug = game.get("slug")
+    if slug is not None and not isinstance(slug, str):
+        die(f"{where}: slug is not null or string")
+    if slug:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", slug):
+            die(f"{where}: slug {slug!r} has unexpected characters")
+    played = game.get("lastplayed")
+    if played is not None:
+        if not isinstance(played, str):
+            die(f"{where}: lastplayed is not null or string")
+        try:
+            datetime.fromisoformat(played)
+        except ValueError:
+            die(f"{where}: lastplayed {played!r} is not an ISO datetime")
+    game["id"] = int(id_)
+
+
+def library():
+    proc = subprocess.run(LIST_CMD, capture_output=True, text=True)
+    if proc.returncode != 0:
+        die(f"lutris list failed (exit {proc.returncode}): {proc.stderr.strip()}")
+    if not proc.stdout.strip():
+        die("lutris list returned empty output")
+    try:
+        games = json.loads(proc.stdout)
+    except json.JSONDecodeError as e:
+        die(f"lutris list output is not JSON: {e}")
+    if not isinstance(games, list):
+        die("lutris list output is not a JSON array")
+
+    for game in games:
+        validate(game)
+        game["art"] = resolve_art(game)
+    # Lutris emits zero-padded datetimes, so plain string sort is date order.
+    played = [g for g in games if g.get("lastplayed") is not None]
+    unplayed = [g for g in games if g.get("lastplayed") is None]
+    played.sort(key=lambda g: g["lastplayed"], reverse=True)
+    unplayed.sort(key=lambda g: g["name"].casefold())
+    json.dump(played + unplayed, sys.stdout, indent=2, ensure_ascii=False)
+    print()
+
+
+def launch(argv):
+    if len(argv) != 1 or not argv[0].isdigit() or int(argv[0]) <= 0:
+        print("usage: lutris-library [--launch <id>]", file=sys.stderr)
+        sys.exit(2)
+    # No --no-session-bus here: launching must reach the running client.
+    os.execvp("flatpak", ["flatpak", "run", FLATPAK_ID, f"lutris:rungameid/{int(argv[0])}"])
+
+
+def main():
+    args = sys.argv[1:]
+    if not args:
+        library()
+    elif args[0] == "--launch":
+        launch(args[1:])
+    else:
+        print("usage: lutris-library [--launch <id>]", file=sys.stderr)
+        sys.exit(2)
+
+
+if __name__ == "__main__":
+    main()
