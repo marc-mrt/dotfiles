@@ -4,8 +4,9 @@ hl.monitor({
     output   = "",
     mode     = "highrr",
     position = "auto",
-    -- Checks stay on: exact 1.75 yields fractional logical pixels at 4K, so
-    -- Hyprland autocorrects it to its grid's 5/3 (~1.667).
-    scale    = 5 / 3,
+    -- 3/2 is the 32" 4K sweet spot: 2560x1440 logical (92.9 logical PPI, the
+    -- same density as a 32" 1440p panel). Divides 3840x2160 into exact
+    -- integers, so Hyprland keeps it as written instead of autocorrecting.
+    scale    = 3 / 2,
     vrr      = false,
 })

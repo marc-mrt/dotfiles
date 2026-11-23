@@ -24,9 +24,11 @@ QtObject {
     // Ceiling for the whole card, as a fraction of screen height. Search
     // can return far more rows than fit, and the card used to just keep
     // growing past the bottom of the screen; past this the expanded tab
-    // scrolls its contents instead (modules/pad/Overview.qml). Sits
-    // comfortably under padTopFraction's remaining 70%.
-    readonly property real padMaxHeightFraction: 0.35
+    // scrolls its contents instead (modules/pad/Overview.qml). 0.55 leaves
+    // 15% of the screen below the card (top 0.30 + 0.55 = 0.85), so an
+    // expanded list reaches further before it starts scrolling; was 0.35,
+    // which scrolled early once the type scale grew.
+    readonly property real padMaxHeightFraction: 0.55
     readonly property int padPadding: 16
     // Half the usual padding above the first row specifically, for a
     // tighter/more compact top edge than the sides/bottom.
@@ -77,11 +79,11 @@ QtObject {
     // the search list ended up at 18px for the same kind of row label that
     // every tab renders at 17. Named by role, so a new label picks a
     // meaning rather than a number.
-    readonly property int fontSmall: 16      // uppercase section captions, chevrons
-    readonly property int fontSecondary: 18  // status under a label, readouts, placeholders
-    readonly property int fontBody: 20       // labels, list rows, menu entries — the default
-    readonly property int fontLarge: 19      // notification app name and message text
-    readonly property int fontDisplay: 60    // the pad clock, and nothing else
+    readonly property int fontSmall: 14      // uppercase section captions, chevrons
+    readonly property int fontSecondary: 16  // status under a label, readouts, placeholders
+    readonly property int fontBody: 18       // labels, list rows, menu entries — the default
+    readonly property int fontLarge: 17      // notification app name and message text
+    readonly property int fontDisplay: 54    // the pad clock, and nothing else
 
     // Shared spacing for a tab's own layout. The eighteen tokens that
     // used to sit here — panelRow*, panelSectionLabel*, slider* — are gone:

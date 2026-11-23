@@ -1,6 +1,6 @@
 Xcursor.theme: {{cursor_theme}}
-! XWayland is zero-scaled: size and dpi are physical pixels at monitor scale 5/3
-Xcursor.size: 40
-Xft.dpi: 160
+! XWayland is zero-scaled: size and dpi are physical pixels at monitor scale 3/2
+Xcursor.size: 36
+Xft.dpi: 144
 *background: {{bg0}}
 *foreground: {{fg}}
