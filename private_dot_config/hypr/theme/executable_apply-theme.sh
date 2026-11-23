@@ -44,6 +44,12 @@ xrdb -merge "$HOME/.Xresources"
 # 5. GTK
 gsettings set org.gnome.desktop.interface color-scheme "$GTK_SCHEME"
 gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME"
+# GTK4 reads gtk.css only at startup, so quit Nautilus and let its next launch
+# pick the new CSS up; other open GTK4 apps need a manual restart — running
+# apps are never re-exec'd.
+if command -v nautilus >/dev/null 2>&1; then
+    nautilus -q
+fi
 
 # 6. Zen Browser
 [[ -f "$ZEN_JS" ]] && cp "$ZEN_JS" "$ZEN_PROFILE/user.js"
