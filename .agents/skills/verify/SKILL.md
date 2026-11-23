@@ -1,6 +1,6 @@
 ---
 name: verify
-description: How to launch and drive the quickshell config in this dotfiles repo to verify a change live.
+description: How to launch and drive the quickshell config and the GTK/Nautilus surfaces in this dotfiles repo to verify a change live.
 ---
 
 ## Launch
@@ -15,7 +15,16 @@ The shell is already running (`qs -c ~/.config/quickshell`, started by Hyprland 
 - Volume toast: `wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+`. Mic toast with no mic present: `pactl load-module module-null-sink media.class=Audio/Source/Virtual sink_name=testmic`, then `pactl set-default-source testmic`, `wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle`, and finally `pactl unload-module <id>`.
 - Notifications: `notify-send -A yes=Yes ...`, `notify-send -i <png> ...`. History persists in `$XDG_RUNTIME_DIR/quickshell-notifications.json`.
 - Search scorer: `node private_dot_config/quickshell/modules/pad/searchScore.test.mjs`.
-- No screenshot or input-injection tool is installed (no grim, ydotool or wtype), so clicks, typing and visuals need a human.
+- Capture with `grim <output.png>`. No input-injection tool is installed (no wtype or ydotool). AT-SPI through `/usr/bin/python3` and `gi.repository.Atspi` can drive many GTK controls; browser upload input may still need a human.
+
+## GTK and Nautilus
+- Apply the worktree with `chezmoi --source <worktree> apply`, then run `~/.config/hypr/theme/apply-theme.sh`. Generated outputs are ignored by chezmoi, so `chezmoi --source <worktree> diff` is empty after a successful apply.
+- `nautilus -q` quits windows for the next fresh launch. Nautilus 51.1 returns 255 after a successful D-Bus quit, and apply-theme accepts that status deliberately. Other GTK4 apps need a manual restart.
+- Inspect with `GTK_DEBUG=interactive nautilus`. Check native clients with `hyprctl clients -j` and class `org.gnome.Nautilus`, `xwayland false`.
+- Capture with `grim <output.png>`.
+- Portal probe: `gdbus call --session --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop --method org.freedesktop.portal.FileChooser.OpenFile '' 'Theme probe' '{}'`. The GTK portal service is `xdg-desktop-portal-gtk` and its client is native Wayland. Focus a test window by address, then close it through Hyprland's Lua dispatcher.
+- Hyprland 0.56 Lua form: `hyprctl dispatch 'hl.dsp.focus({ workspace = 2 })'`; focus a window with `hl.dsp.focus({ window = "address:<address>" })`; close the active window with `hl.dsp.window.close()`.
+- LACT is an available non-Nautilus libadwaita comparison (`lact`).
 
 ## Teardown
 Re-apply the main source (`chezmoi apply ~/.config/quickshell`) if the branch should not stay live.
