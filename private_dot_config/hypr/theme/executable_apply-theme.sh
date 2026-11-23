@@ -28,12 +28,6 @@ source ~/.config/hypr/theme/palette.env
 # 2. Wallpaper
 hyprctl hyprpaper wallpaper ", $WALLPAPER, cover" || true  # hyprpaper may not be up yet at login
 
-# Sync hyprlock background path
-HYPRLOCK_OVERRIDE="$HOME/.config/hypr/hyprlock-wallpaper.conf"
-echo "background {" > "$HYPRLOCK_OVERRIDE"
-echo "    path = $WALLPAPER" >> "$HYPRLOCK_OVERRIDE"
-echo "}" >> "$HYPRLOCK_OVERRIDE"
-
 # 3. Reload hyprland — picks up the freshly rendered colors.conf
 hyprctl reload
 
