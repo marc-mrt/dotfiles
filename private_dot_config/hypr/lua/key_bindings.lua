@@ -4,7 +4,7 @@
 
 local browser = "flatpak run app.zen_browser.zen"
 local terminal = "ghostty"
-local fileManager = "thunar"
+local fileManager = "nautilus"
 
 local mainMod = "SUPER"
 
