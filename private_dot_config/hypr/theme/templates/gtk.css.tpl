@@ -50,6 +50,38 @@
 @define-color scrollbar_outline_color alpha(@window_fg_color, 0.5);
 @define-color selected_bg_color {{sel}};
 
+/* ── GTK3 base roles ─────────────────────────────────────────
+   xdg-desktop-portal-gtk reads these theme_* names, not the
+   libadwaita roles above that serve GTK4. With gtk_theme_name
+   = Adwaita these override the stock light Adwaita colours. */
+@define-color theme_bg_color {{bg0}};
+@define-color theme_fg_color {{fg}};
+@define-color theme_base_color {{bg0}};
+@define-color theme_text_color {{fg}};
+@define-color theme_selected_bg_color {{accent}};
+@define-color theme_selected_fg_color {{bg0}};
+@define-color theme_tooltip_bg_color {{bg1}};
+@define-color theme_tooltip_fg_color {{fg}};
+@define-color theme_titlebar_bg_color {{bg0}};
+@define-color theme_titlebar_fg_color {{fg}};
+
+/* ── GTK3 filechooser (xdg-desktop-portal-gtk) ───────────────
+   theme_* names alone do not restyle compiled filechooser
+   states, so target its widgets directly. */
+filechooser .view,
+filechooser .view text,
+filechooser treeview.view,
+filechooser placesview { color: @theme_text_color; background-color: @theme_base_color; }
+
+filechooser row { color: @theme_fg_color; }
+
+filechooser row.activatable:hover { background-color: alpha(@theme_fg_color, 0.08); }
+
+filechooser .view:selected,
+filechooser .view text:selected,
+filechooser treeview.view:selected,
+filechooser row:selected { color: @theme_selected_fg_color; background-color: @theme_selected_bg_color; }
+
 /* ── Nautilus polish (palette-independent) ───────────────────
    Scoped to window.nautilus-window so GTK3 and other apps are
    untouched. Sizes mirror the Quickshell pad: list rows 40px tall,

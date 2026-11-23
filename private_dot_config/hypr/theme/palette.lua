@@ -16,7 +16,7 @@ return {
   accent    = "#67c2cb", -- teal, matched to aurora wallpaper.jpg
   secondary = "#33b1ff", -- blue sits naturally next to teal in the aurora itself
 
-  gtk_theme_name = "Nightfox-Carbon",
+  gtk_theme_name = "Adwaita",
   gtk_scheme     = "prefer-dark",
 
   cursor_theme = "catppuccin-latte-light-cursors",
