@@ -1,0 +1,20 @@
+#!/bin/sh
+# GTK interface settings chezmoi owns; reruns when this template changes.
+# The font change intentionally affects every GTK app. color-scheme/gtk-theme
+# also live in apply-theme.sh — that stays the live-apply mechanism.
+set -eu
+
+{{ if ne .chezmoi.os "linux" -}}
+exit 0
+{{ end -}}
+
+gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+gsettings set org.gnome.desktop.interface font-name 'Maple Mono 10'
+gsettings set org.gnome.desktop.interface monospace-font-name 'Maple Mono 10'
+gsettings set org.gnome.desktop.interface cursor-theme 'catppuccin-latte-light-cursors'
+gsettings set org.gnome.desktop.interface cursor-size 24
+
+# Nautilus "Open in Terminal" target; the schema exists only with the extension installed.
+if gsettings list-schemas | grep -q '^com\.github\.stunkymonkey\.nautilus-open-any-terminal$'; then
+    gsettings set com.github.stunkymonkey.nautilus-open-any-terminal terminal 'ghostty'
+fi
