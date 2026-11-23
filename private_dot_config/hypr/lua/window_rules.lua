@@ -64,7 +64,7 @@ hl.window_rule({
 -- Common floating dialogs
 hl.window_rule({
     name   = "float-dialogs",
-    match  = { class = "^(pavucontrol|blueman-manager|nm-connection-editor|thunar)$" },
+    match  = { class = "^(pavucontrol|blueman-manager|nm-connection-editor)$" },
     float  = true,
     center = true,
 })
