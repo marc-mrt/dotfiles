@@ -1,0 +1,9 @@
+#!/bin/sh
+# Desktop font defaults: Inter 11 UI/document, Maple Mono 10 monospace.
+# run_onchange re-runs this when its contents change; gsettings set is
+# idempotent, so running it twice leaves the same values.
+{{ if eq .chezmoi.os "linux" -}}
+gsettings set org.gnome.desktop.interface font-name 'Inter 11'
+gsettings set org.gnome.desktop.interface document-font-name 'Inter 11'
+gsettings set org.gnome.desktop.interface monospace-font-name 'Maple Mono 10'
+{{ end -}}

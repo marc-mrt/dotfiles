@@ -4,6 +4,6 @@ hl.monitor({
     output   = "",
     mode     = "highrr",
     position = "auto",
-    scale    = 1.25,
+    scale    = 1.75,
     vrr      = false,
 })

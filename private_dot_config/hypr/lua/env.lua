@@ -12,6 +12,7 @@ hl.env("GDK_BACKEND", "wayland,x11")  -- graceful fallback
 
 -- Qt
 hl.env("QT_QPA_PLATFORM", "wayland;xcb")
+hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
 hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
 
 -- Hyprcursor
