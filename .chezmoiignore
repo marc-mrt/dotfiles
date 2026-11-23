@@ -62,15 +62,20 @@ README.md
 ##
 # Linux-only surface.
 #
-# Hyprland, quickshell and flatpak have no macOS equivalent, so everything
-# under them is skipped entirely off Linux. The nvim/ghostty/zsh/starship
-# configs are deliberately NOT in this list — they are shared across both
-# machines and carry their own per-OS branches inside templates.
+# Hyprland, quickshell, fontconfig, qt6ct and flatpak have no macOS
+# equivalent, so everything under them is skipped entirely off Linux. The
+# nvim/ghostty/zsh/starship configs are deliberately NOT in this list — they
+# are shared across both machines and carry their own per-OS branches inside
+# templates.
 #
+.config/fontconfig
+.config/fontconfig/**
 .config/hypr
 .config/hypr/**
 .config/quickshell
 .config/quickshell/**
+.config/qt6ct
+.config/qt6ct/**
 .local/bin/capture
 .local/bin/lutris-library
 .var

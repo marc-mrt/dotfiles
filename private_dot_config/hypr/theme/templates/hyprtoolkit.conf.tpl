@@ -10,4 +10,6 @@ h1_size         = 19
 h2_size         = 15
 h3_size         = 13
 small_font_size = 11
+font_family     = Inter
+font_family_monospace = Maple Mono
 icon_theme = Papirus-Dark
