@@ -1,7 +1,8 @@
 #!/bin/sh
 # GTK interface settings chezmoi owns; reruns when this template changes.
-# The font change intentionally affects every GTK app. color-scheme/gtk-theme
-# also live in apply-theme.sh — that stays the live-apply mechanism.
+# Desktop fonts are owned by run_onchange_after_fonts.sh.tmpl and deliberately
+# not set here. color-scheme/gtk-theme also live in apply-theme.sh — that stays
+# the live-apply mechanism.
 set -eu
 
 {{ if ne .chezmoi.os "linux" -}}
@@ -9,10 +10,6 @@ exit 0
 {{ end -}}
 
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
-# UI font follows Quickshell/fontconfig default; Maple Mono stays scoped to
-# monospace contexts (code, terminal). font-name affects every GTK app.
-gsettings set org.gnome.desktop.interface font-name 'Noto Sans 10'
-gsettings set org.gnome.desktop.interface monospace-font-name 'Maple Mono 10'
 gsettings set org.gnome.desktop.interface cursor-theme 'catppuccin-latte-light-cursors'
 gsettings set org.gnome.desktop.interface cursor-size 24
 
