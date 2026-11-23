@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verifies Inter as the default UI font, Maple Mono as the monospace, and
-# 240/137 (~1.75) desktop scaling.
+# 5/3 (~1.667) desktop scaling.
 #
 #   font-check.sh                live session: fc-match, gsettings, hyprctl,
 #                                xrdb, qt6ct.conf, quickshell process env
@@ -78,13 +78,13 @@ source_mode() {
     group_ok "$before" "env.lua qt6ct theme, no forbidden scaling vars"
 
     monitors=$(chezmoi --source "$SRC" cat ~/.config/hypr/lua/monitors.lua 2>/dev/null)
-    contains "$monitors" 'scale[[:space:]]*=[[:space:]]*240[[:space:]]*/[[:space:]]*137' \
-        || fail "monitor scale is not 240/137 (nearest clean 16:9 scale to 1.75)"
+    contains "$monitors" 'scale[[:space:]]*=[[:space:]]*5[[:space:]]*/[[:space:]]*3' \
+        || fail "monitor scale is not 5/3 (Hyprland's accepted ~1.667 grid value)"
 
     xr=$(chezmoi --source "$SRC" cat ~/.config/hypr/theme/templates/xresources.tpl 2>/dev/null)
-    contains "$xr" '^Xft.dpi: 168$' || fail "Xft.dpi is not 168"
-    contains "$xr" '^Xcursor.size: 42$' || fail "Xcursor.size is not 42"
-    contains "$xr" 'monitor scale 1.75' || fail "Xresources comment does not say scale 1.75"
+    contains "$xr" '^Xft.dpi: 160$' || fail "Xft.dpi is not 160"
+    contains "$xr" '^Xcursor.size: 40$' || fail "Xcursor.size is not 40"
+    contains "$xr" 'monitor scale 5/3' || fail "Xresources comment does not say scale 5/3"
 
     qt=$(chezmoi --source "$SRC" cat ~/.config/qt6ct/qt6ct.conf 2>/dev/null)
     contains "$qt" "$QT_GENERAL" || fail "qt6ct general font is not the exact Qt6 Inter 11 string"
@@ -199,17 +199,17 @@ live_mode() {
     scale=$(hyprctl monitors -j | jq -r '.[] | select(.name=="DP-1") | .scale')
     if [ -n "$scale" ]; then
         printf '%s\n' "$scale" | awk '
-            { d = $1 - 240 / 137; if (d < 0) d = -d; exit (d <= 0.001) ? 0 : 1 }
-        ' || fail "DP-1 scale is $scale, not 240/137 (within 0.001)"
+            { d = $1 - 5 / 3; if (d < 0) d = -d; exit (d <= 0.001) ? 0 : 1 }
+        ' || fail "DP-1 scale is $scale, not 5/3 (within 0.001)"
     else
-        fail "DP-1 scale is unset, not 240/137"
+        fail "DP-1 scale is unset, not 5/3"
     fi
-    group_ok "$before" "DP-1 scale 240/137 (~1.75)"
+    group_ok "$before" "DP-1 scale 5/3 (~1.667)"
 
     before=$fails
-    xrdb -query | grep -Eqx 'Xft\.dpi:[[:space:]]+168' || fail "xrdb Xft.dpi is not 168"
-    xrdb -query | grep -Eqx 'Xcursor\.size:[[:space:]]+42' || fail "xrdb Xcursor.size is not 42"
-    group_ok "$before" "xrdb Xft.dpi 168, Xcursor.size 42"
+    xrdb -query | grep -Eqx 'Xft\.dpi:[[:space:]]+160' || fail "xrdb Xft.dpi is not 160"
+    xrdb -query | grep -Eqx 'Xcursor\.size:[[:space:]]+40' || fail "xrdb Xcursor.size is not 40"
+    group_ok "$before" "xrdb Xft.dpi 160, Xcursor.size 40"
 
     qt=$(cat "$HOME/.config/qt6ct/qt6ct.conf" 2>/dev/null)
     before=$fails
