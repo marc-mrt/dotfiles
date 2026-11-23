@@ -48,7 +48,9 @@ gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME"
 # pick the new CSS up; other open GTK4 apps need a manual restart — running
 # apps are never re-exec'd.
 if command -v nautilus >/dev/null 2>&1; then
-    nautilus -q
+    # Nautilus 51.1 returns 255 after a successful D-Bus quit; any other
+    # nonzero status stays fatal under set -euo pipefail.
+    nautilus -q || [[ $? -eq 255 ]]
 fi
 
 # 6. Zen Browser
