@@ -86,4 +86,6 @@ README.md
 .local/share/flatpak/**
 .local/share/icons
 .local/share/icons/**
+fonts.sh
+gtk-settings.sh
 {{ end -}}
