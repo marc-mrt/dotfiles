@@ -470,11 +470,13 @@ ColumnLayout {
             anchors.centerIn: parent
             spacing: 6
             W.Icon {
+                anchors.verticalCenter: parent.verticalCenter
                 name: Notifications.dnd ? "bell-off" : "bell"
                 size: Metrics.fontSmall
                 color: Colors.text
             }
             Text {
+                anchors.verticalCenter: parent.verticalCenter
                 text: root.waiting
                 color: Colors.text
                 font.pixelSize: Metrics.fontSmall

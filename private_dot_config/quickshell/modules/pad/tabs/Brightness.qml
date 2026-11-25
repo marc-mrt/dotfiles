@@ -21,7 +21,7 @@ ColumnLayout {
             W.Icon {
                 anchors.centerIn: parent
                 name: "sun"
-                size: Metrics.iconButtonGlyphSize
+                size: Metrics.fontBody
                 color: Colors.text
             }
         }
