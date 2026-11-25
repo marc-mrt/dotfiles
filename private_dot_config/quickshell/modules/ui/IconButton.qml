@@ -11,8 +11,11 @@ Item {
     id: root
 
     property string glyph: ""
+    // A vendored Lucide icon name — takes the place of `glyph` when set.
+    property string icon: ""
     // Dimmed by callers that use this as a toggle — a muted speaker reads
-    // as off rather than merely as a different glyph.
+    // as off rather than merely as a different glyph. Tints both the
+    // glyph and the Lucide icon.
     property color glyphColor: Colors.text
     property int glyphSize: Metrics.iconButtonGlyphSize
     property int size: Metrics.iconButtonSize
@@ -40,9 +43,22 @@ Item {
 
     Text {
         anchors.centerIn: parent
+        visible: root.icon === ""
         text: root.glyph
         color: root.glyphColor
         font.pixelSize: root.glyphSize
+        scale: ma.pressed ? 0.88 : 1
+        Behavior on scale { NumberAnimation { duration: Metrics.durationFast; easing.type: Metrics.easingStandard } }
+    }
+
+    // The Lucide counterpart of the Text above — same centering, same
+    // press scale, so the two are interchangeable at the call site.
+    Icon {
+        anchors.centerIn: parent
+        visible: root.icon !== ""
+        name: root.icon
+        color: root.glyphColor
+        size: root.glyphSize
         scale: ma.pressed ? 0.88 : 1
         Behavior on scale { NumberAnimation { duration: Metrics.durationFast; easing.type: Metrics.easingStandard } }
     }
