@@ -8,7 +8,7 @@ import "../../ui" as W
 // nothing to show would be a dead target. Zero width when hidden: RowLayout
 // skips invisible children, so the row doesn't leave a gap.
 W.StatusChip {
-    text: Mpris.players.values.some(p => p.isPlaying) ? "\u{F040A}" : "\u{F03E4}"
+    icon: Mpris.players.values.some(p => p.isPlaying) ? "play" : "pause"
     visible: Mpris.players.values.length > 0
     active: PanelState.isInlineOpen("media")
     onClicked: PanelState.toggleInline("media")

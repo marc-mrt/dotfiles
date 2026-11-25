@@ -11,9 +11,8 @@ W.StatusChip {
     readonly property int connectedCount: Bluetooth.devices
         ? Bluetooth.devices.values.filter(d => d.connected).length : 0
 
-    text: "\u{F00AF}"
-        + (root.connectedCount > 0 ? " " + root.connectedCount : "")
-    centreOnAdvance: true
+    icon: "bluetooth"
+    text: root.connectedCount > 0 ? root.connectedCount : ""
     active: PanelState.isInlineOpen("bluetooth")
     onClicked: PanelState.toggleInline("bluetooth")
 }

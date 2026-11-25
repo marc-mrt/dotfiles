@@ -5,13 +5,13 @@ import "../../ui" as W
 
 // Connection type + signal strength, icon only — no SSID label.
 W.StatusChip {
-    text: Network.ethernetConnected ? "\u{F0200}"
-        : !Network.wifiEnabled ? "\u{F092F}"
-        : !Network.connected ? "\u{F0922}"
-        : Network.activeSignal >= 70 ? "\u{F0928}"
-        : Network.activeSignal >= 45 ? "\u{F0925}"
-        : Network.activeSignal >= 20 ? "\u{F0922}"
-        : "\u{F092F}"
+    icon: Network.ethernetConnected ? "ethernet-port"
+        : !Network.wifiEnabled ? "wifi-off"
+        : !Network.connected ? "wifi-zero"
+        : Network.activeSignal >= 70 ? "wifi"
+        : Network.activeSignal >= 45 ? "wifi-high"
+        : Network.activeSignal >= 20 ? "wifi-low"
+        : "wifi-zero"
     // No ethernet and no wifi link (radio off or not associated).
     alert: !Network.ethernetConnected && (!Network.wifiEnabled || !Network.connected)
     active: PanelState.isInlineOpen("network")

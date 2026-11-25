@@ -5,7 +5,8 @@ import "../../ui" as W
 
 // Scroll to adjust the default sink, middle-click to mute.
 W.StatusChip {
-    text: (Audio.muted ? "\u{F075F} " : "\u{F057E} ") + Audio.volume + "%"
+    icon: Audio.muted ? "volume-x" : "volume-2"
+    text: Audio.volume + "%"
     active: PanelState.isInlineOpen("volume")
     alert: Audio.muted
     onClicked: PanelState.toggleInline("volume")

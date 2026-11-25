@@ -9,7 +9,8 @@ import "../../ui" as W
 // nothing more to show.
 W.StatusChip {
     visible: Capture.recording
-    text: "\u{F044A} " + Capture.elapsed
+    icon: "circle-dot"
+    text: Capture.elapsed
     alert: true
     onClicked: Capture.stopRecording()
 }
