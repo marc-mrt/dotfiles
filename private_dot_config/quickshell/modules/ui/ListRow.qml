@@ -35,6 +35,12 @@ Rectangle {
     // than one, never none — every row leads with something.
     property url iconSource: ""
     property string icon: ""
+    // A second vendored Lucide name drawn behind `icon` in the same slot,
+    // at the same size and alignment — a dim full-strength shape that
+    // gives a levelled glyph its context (the wifi signal levels read as
+    // cutouts of one full wifi). Empty draws nothing.
+    property string iconBack: ""
+    property color iconBackColor: Colors.alpha(Colors.text, 0.25)
     property string glyph: ""
     property color glyphColor: Colors.text
 

@@ -61,6 +61,10 @@ ColumnLayout {
                         icon: entry.modelData.signal >= 70 ? "wifi"
                             : entry.modelData.signal >= 45 ? "wifi-high"
                             : entry.modelData.signal >= 20 ? "wifi-low" : "wifi-zero"
+                        // Dim full wifi behind every level, so each reads
+                        // as a cutout of one shape — same treatment as the
+                        // overview chip (StatusChip's iconBack).
+                        iconBack: "wifi"
                         glyphColor: entry.modelData.active ? Colors.accent : Colors.text
                         label: entry.modelData.ssid
                         labelColor: entry.modelData.active ? Colors.accent : Colors.text
