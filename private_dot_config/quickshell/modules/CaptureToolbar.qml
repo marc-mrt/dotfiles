@@ -16,11 +16,11 @@ FocusScope {
     implicitHeight: row.implicitHeight + 16
 
     readonly property var modes: [
-        { kind: "shot", target: "screen", glyph: "\u{F0379}", label: "Screen" },
-        { kind: "shot", target: "window", glyph: "\u{F05AF}", label: "Window" },
-        { kind: "shot", target: "area", glyph: "\u{F019F}", label: "Area" },
-        { kind: "record", target: "screen", glyph: "\u{F0567}", label: "Record screen" },
-        { kind: "record", target: "area", glyph: "\u{F044A}", label: "Record area" }
+        { kind: "shot", target: "screen", icon: "monitor", label: "Screen" },
+        { kind: "shot", target: "window", icon: "app-window", label: "Window" },
+        { kind: "shot", target: "area", icon: "scan", label: "Area" },
+        { kind: "record", target: "screen", icon: "video", label: "Record screen" },
+        { kind: "record", target: "area", icon: "circle-dot", label: "Record area" }
     ]
     readonly property int selected: root.modes.findIndex(m =>
         m.kind === Capture.kind && m.target === Capture.target)
@@ -46,12 +46,12 @@ FocusScope {
         event.accepted = true
     }
 
-    // Glyph over a caption, accent pill when selected — a toolbar mode or
+    // Icon over a caption, accent pill when selected — a toolbar mode or
     // action. IconButton has no caption or selected state, and those are
     // the whole point here.
     component ToolButton: Item {
         id: btn
-        property string glyph: ""
+        property string icon: ""
         property string label: ""
         property bool selected: false
         property color tint: Colors.text
@@ -70,12 +70,12 @@ FocusScope {
             id: col
             anchors.centerIn: parent
             spacing: 2
-            Text {
+            W.Icon {
                 Layout.alignment: Qt.AlignHCenter
-                visible: btn.glyph !== ""
-                text: btn.glyph
+                visible: btn.icon !== ""
+                name: btn.icon
                 color: btn.tint
-                font.pixelSize: Metrics.iconButtonGlyphSize
+                size: Metrics.iconButtonGlyphSize
             }
             Text {
                 Layout.alignment: Qt.AlignHCenter
@@ -97,7 +97,7 @@ FocusScope {
         required property int index
         property int offset: 0
         readonly property int mode: mb.index + mb.offset
-        glyph: root.modes[mb.mode].glyph
+        icon: root.modes[mb.mode].icon
         label: root.modes[mb.mode].label
         selected: mb.mode === root.selected
         onClicked: root.select(mb.mode)
@@ -129,7 +129,7 @@ FocusScope {
         Divider { visible: !Capture.recording }
         ToolButton {
             visible: !Capture.recording
-            glyph: "\u{F051B}"
+            icon: "timer"
             label: Capture.delay === 0 ? "No delay" : Capture.delay + "s delay"
             onClicked: Capture.cycleDelay()
         }
@@ -141,13 +141,13 @@ FocusScope {
         }
         ToolButton {
             visible: Capture.recording
-            glyph: "\u{F04DB}"
+            icon: "square"
             tint: Colors.destructive
             label: "Stop recording"
             onClicked: Capture.stopRecording()
         }
         W.IconButton {
-            glyph: "\u{F0156}"
+            icon: "x"
             onClicked: Capture.toolbarShown = false
         }
     }
