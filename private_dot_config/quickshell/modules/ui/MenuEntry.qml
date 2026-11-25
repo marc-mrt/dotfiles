@@ -64,11 +64,11 @@ ColumnLayout {
                 font.pixelSize: Metrics.fontBody
                 elide: Text.ElideRight
             }
-            Text {
+            Icon {
                 visible: root.modelData.hasChildren
-                text: root.expanded ? "\u{F077}" : "\u{F078}"
+                name: root.expanded ? "chevron-up" : "chevron-down"
+                size: Metrics.fontSmall
                 color: Colors.alpha(Colors.text, 0.6)
-                font.pixelSize: Metrics.fontSmall
             }
         }
 
