@@ -32,7 +32,9 @@ Rectangle {
 
     // Icon slot: a real icon when one resolves (search results), else a
     // vendored Lucide icon when `icon` is set, else a glyph. Never more
-    // than one, never none — every row leads with something.
+    // than one, never none — every row leads with something. `iconBack`
+    // optionally draws a second, dim Lucide glyph as an underlay behind
+    // `icon` in the same slot (see StatusChip's iconBack).
     property url iconSource: ""
     property string icon: ""
     // A second vendored Lucide name drawn behind `icon` in the same slot,
@@ -105,6 +107,17 @@ Rectangle {
                 name: root.icon
                 color: root.glyphColor
                 size: Metrics.fontBody
+
+                // z: -1 puts it behind this Icon's own MultiEffect, so the
+                // main glyph's strokes land on top of the dim shape —
+                // same nesting as StatusChip's iconBack.
+                Icon {
+                    visible: root.iconBack !== ""
+                    z: -1
+                    name: root.iconBack
+                    color: root.iconBackColor
+                    size: Metrics.fontBody
+                }
             }
             Text {
                 anchors.centerIn: parent

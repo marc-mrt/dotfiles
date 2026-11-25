@@ -29,6 +29,7 @@ ColumnLayout {
             W.IconButton {
                 anchors.fill: parent
                 icon: Audio.muted ? "volume-x" : "volume-2"
+                glyphSize: Metrics.fontBody
                 glyphColor: Audio.muted ? Colors.alpha(Colors.text, 0.5) : Colors.text
                 onClicked: Audio.toggleMute()
             }
