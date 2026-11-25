@@ -65,7 +65,7 @@ ColumnLayout {
         spacing: Metrics.panelHeaderSpacing
 
         W.IconButton {
-            glyph: "\u{F0141}"
+            icon: "chevron-left"
             onClicked: root.shiftMonth(-1)
         }
         Text {
@@ -77,7 +77,7 @@ ColumnLayout {
             font.bold: true
         }
         W.IconButton {
-            glyph: "\u{F0142}"
+            icon: "chevron-right"
             onClicked: root.shiftMonth(1)
         }
     }

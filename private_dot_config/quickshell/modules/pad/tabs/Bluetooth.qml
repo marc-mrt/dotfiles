@@ -50,7 +50,7 @@ ColumnLayout {
         title: "Bluetooth"
         W.IconButton {
             visible: Bluetooth.powered && pages.current === 1
-            glyph: "\u{F0450}"
+            icon: "refresh-cw"
             onClicked: Bluetooth.toggleScan()
         }
         W.Toggle {
@@ -78,7 +78,7 @@ ColumnLayout {
                     id: known
                     required property var modelData
                     visible: modelData.paired
-                    glyph: modelData.connected ? "\u{F00B1}" : "\u{F00AF}"
+                    icon: modelData.connected ? "bluetooth-connected" : "bluetooth"
                     glyphColor: modelData.connected ? Colors.accent : Colors.text
                     label: modelData.name
                     labelColor: modelData.connected ? Colors.accent : Colors.text
@@ -104,7 +104,7 @@ ColumnLayout {
                         enabled: shown
                         opacity: shown ? 1 : 0
                         Behavior on opacity { NumberAnimation { duration: Metrics.durationFast } }
-                        glyph: "\u{F01B4}"
+                        icon: "trash"
                         glyphColor: Colors.destructive
                         onClicked: root.forgetDevice(known.modelData)
                     }
@@ -128,7 +128,7 @@ ColumnLayout {
                     id: nearby
                     required property var modelData
                     visible: !modelData.paired
-                    glyph: "\u{F00AF}"
+                    icon: "bluetooth"
                     label: modelData.name
                     status: modelData.pairing ? "Pairing…" : "Pair"
                     onClicked: modelData.pair()
