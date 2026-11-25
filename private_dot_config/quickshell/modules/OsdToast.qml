@@ -18,15 +18,15 @@ RowLayout {
 
     W.WorkspaceDots { visible: root.isWorkspace }
 
-    Text {
+    W.Icon {
         visible: !root.isWorkspace
-        text: root.isMic
-            ? (Osd.muted ? "\u{F036D}" : "\u{F036C}")
+        name: root.isMic
+            ? (Osd.muted ? "mic-off" : "mic")
             : root.isVolume
-            ? (root.muted ? "\u{F075F}" : "\u{F057E}")
-            : "\u{2600}"
+            ? (root.muted ? "volume-x" : "volume-2")
+            : "sun"
+        size: Metrics.iconButtonGlyphSize
         color: Colors.text
-        font.pixelSize: Metrics.iconButtonGlyphSize
     }
 
     Rectangle {
