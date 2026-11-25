@@ -287,12 +287,12 @@ ColumnLayout {
             }
             // No live state to render: a static gear and a tab name.
             W.StatusChip {
-                text: "\u{F013}"
+                icon: "settings"
                 active: PanelState.isInlineOpen("settings")
                 onClicked: PanelState.toggleInline("settings")
             }
             W.StatusChip {
-                text: "\u{F0425}"
+                icon: "power"
                 active: PanelState.isInlineOpen("power")
                 onClicked: PanelState.toggleInline("power")
             }

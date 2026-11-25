@@ -8,7 +8,8 @@ import "../../ui" as W
 // all it takes to leave no gap behind.
 W.StatusChip {
     visible: Brightness.available
-    text: "\u{2600} " + Brightness.brightness + "%"
+    icon: "sun"
+    text: Brightness.brightness + "%"
     active: PanelState.isInlineOpen("brightness")
     onClicked: PanelState.toggleInline("brightness")
     onScrolled: (steps) => Brightness.setBrightness(Brightness.brightness + steps * 5)

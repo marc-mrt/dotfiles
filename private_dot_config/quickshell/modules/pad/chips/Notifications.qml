@@ -8,6 +8,6 @@ import "../../ui" as W
 // screen (modules/NotificationStack.qml), not behind this glyph.
 W.StatusChip {
     visible: Notifications.dnd
-    text: "\u{F009B}"
+    icon: "bell-off"
     onClicked: Notifications.toggleDnd()
 }

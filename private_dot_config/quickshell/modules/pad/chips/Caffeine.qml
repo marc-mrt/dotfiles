@@ -7,6 +7,6 @@ import "../../ui" as W
 // switch lives in the Settings tab's quick toggles. Click still releases it.
 W.StatusChip {
     visible: Caffeine.active
-    text: "\u{EF59}"
+    icon: "coffee"
     onClicked: Caffeine.toggle()
 }
