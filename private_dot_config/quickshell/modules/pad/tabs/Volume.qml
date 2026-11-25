@@ -28,7 +28,7 @@ ColumnLayout {
 
             W.IconButton {
                 anchors.fill: parent
-                glyph: Audio.muted ? "\u{F075F}" : "\u{F057E}"
+                icon: Audio.muted ? "volume-x" : "volume-2"
                 glyphColor: Audio.muted ? Colors.alpha(Colors.text, 0.5) : Colors.text
                 onClicked: Audio.toggleMute()
             }
@@ -87,12 +87,12 @@ ColumnLayout {
                             visible: row.modelData.icon.length > 0
                             source: row.modelData.icon
                         }
-                        Text {
+                        W.Icon {
                             anchors.centerIn: parent
                             visible: row.modelData.icon.length === 0
-                            text: "\u{F057E}"
+                            name: "volume-2"
+                            size: Metrics.fontBody
                             color: Colors.alpha(Colors.text, 0.6)
-                            font.pixelSize: Metrics.fontBody
                         }
                     }
 
@@ -107,7 +107,7 @@ ColumnLayout {
                     }
 
                     W.IconButton {
-                        glyph: row.vol.muted ? "\u{F075F}" : "\u{F057E}"
+                        icon: row.vol.muted ? "volume-x" : "volume-2"
                         glyphColor: row.vol.muted
                             ? Colors.alpha(Colors.text, 0.5) : Colors.text
                         onClicked: Audio.setStreamMute(row.modelData.index, !row.vol.muted)
@@ -146,7 +146,7 @@ ColumnLayout {
                 model: Audio.sinks
                 delegate: W.ListRow {
                     required property var modelData
-                    glyph: modelData.name === Audio.defaultSink ? "\u{F012C}" : "\u{F0130}"
+                    icon: modelData.name === Audio.defaultSink ? "circle-check" : "circle"
                     glyphColor: modelData.name === Audio.defaultSink
                         ? Colors.accent : Colors.alpha(Colors.text, 0.4)
                     label: modelData.description
@@ -165,7 +165,7 @@ ColumnLayout {
                 model: Audio.sources
                 delegate: W.ListRow {
                     required property var modelData
-                    glyph: modelData.name === Audio.defaultSource ? "\u{F012C}" : "\u{F0130}"
+                    icon: modelData.name === Audio.defaultSource ? "circle-check" : "circle"
                     glyphColor: modelData.name === Audio.defaultSource
                         ? Colors.accent : Colors.alpha(Colors.text, 0.4)
                     label: modelData.description
