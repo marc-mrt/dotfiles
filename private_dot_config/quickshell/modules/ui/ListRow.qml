@@ -30,9 +30,11 @@ import "../../config"
 Rectangle {
     id: root
 
-    // Icon slot: a real icon when one resolves (search results), otherwise
-    // a glyph. Never both, never neither — every row leads with something.
+    // Icon slot: a real icon when one resolves (search results), else a
+    // vendored Lucide icon when `icon` is set, else a glyph. Never more
+    // than one, never none — every row leads with something.
     property url iconSource: ""
+    property string icon: ""
     property string glyph: ""
     property color glyphColor: Colors.text
 
@@ -91,9 +93,16 @@ Rectangle {
                 visible: root.iconSource.toString().length > 0
                 source: root.iconSource
             }
+            Icon {
+                anchors.centerIn: parent
+                visible: root.iconSource.toString().length === 0 && root.icon !== ""
+                name: root.icon
+                color: root.glyphColor
+                size: Metrics.fontBody
+            }
             Text {
                 anchors.centerIn: parent
-                visible: root.iconSource.toString().length === 0
+                visible: root.iconSource.toString().length === 0 && root.icon === ""
                 text: root.glyph
                 color: root.glyphColor
                 font.pixelSize: Metrics.fontBody
