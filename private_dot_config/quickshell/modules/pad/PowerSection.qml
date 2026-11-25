@@ -42,18 +42,18 @@ ColumnLayout {
 
         Repeater {
             model: [
-                { name: "lock", glyph: "\u{F033E}", label: "Lock", confirm: false, verb: "lock" },
-                { name: "suspend", glyph: "\u{F04B2}", label: "Suspend", confirm: false, verb: "suspend" },
-                { name: "logout", glyph: "\u{F0343}", label: "Log out", confirm: true, verb: "log out" },
-                { name: "reboot", glyph: "\u{F0709}", label: "Reboot", confirm: true, verb: "reboot" },
-                { name: "poweroff", glyph: "\u{F0425}", label: "Power off", confirm: true, verb: "power off" }
+                { name: "lock", icon: "lock", label: "Lock", confirm: false, verb: "lock" },
+                { name: "suspend", icon: "moon", label: "Suspend", confirm: false, verb: "suspend" },
+                { name: "logout", icon: "log-out", label: "Log out", confirm: true, verb: "log out" },
+                { name: "reboot", icon: "rotate-ccw", label: "Reboot", confirm: true, verb: "reboot" },
+                { name: "poweroff", icon: "power", label: "Power off", confirm: true, verb: "power off" }
             ]
             delegate: W.ListRow {
                 id: row
                 required property var modelData
                 readonly property bool isArmed: root.armed === row.modelData.name
 
-                glyph: row.modelData.glyph
+                icon: row.modelData.icon
                 glyphColor: row.isArmed ? Colors.destructive : Colors.text
                 label: row.modelData.label
                 labelColor: row.isArmed ? Colors.destructive : Colors.text

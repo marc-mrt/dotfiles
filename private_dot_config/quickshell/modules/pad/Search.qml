@@ -41,11 +41,11 @@ ColumnLayout {
     // never on an empty query, where one stray Enter must not offer a
     // reboot. `verb` is non-empty for the ones that ask for a second Enter.
     readonly property var sessionEntries: [
-        { id: "lock", name: "Lock", glyph: "\u{F033E}", verb: "", keywords: ["screen"] },
-        { id: "suspend", name: "Suspend", glyph: "\u{F04B2}", verb: "", keywords: ["sleep"] },
-        { id: "logout", name: "Log out", glyph: "\u{F0343}", verb: "log out", keywords: ["logout", "sign out", "exit"] },
-        { id: "reboot", name: "Reboot", glyph: "\u{F0709}", verb: "reboot", keywords: ["restart"] },
-        { id: "poweroff", name: "Power off", glyph: "\u{F0425}", verb: "power off", keywords: ["shutdown", "shut down"] }
+        { id: "lock", name: "Lock", icon: "lock", verb: "", keywords: ["screen"] },
+        { id: "suspend", name: "Suspend", icon: "moon", verb: "", keywords: ["sleep"] },
+        { id: "logout", name: "Log out", icon: "log-out", verb: "log out", keywords: ["logout", "sign out", "exit"] },
+        { id: "reboot", name: "Reboot", icon: "rotate-ccw", verb: "reboot", keywords: ["restart"] },
+        { id: "poweroff", name: "Power off", icon: "power", verb: "power off", keywords: ["shutdown", "shut down"] }
     ]
 
     // The item lists below are built once per source change, not per
@@ -196,10 +196,10 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth: true
         spacing: 8
-        Text {
-            text: "\u{F0349}"
+        W.Icon {
+            name: "search"
             color: Colors.alpha(Colors.text, 0.5)
-            font.pixelSize: Metrics.fontBody
+            size: Metrics.fontBody
         }
         Text {
             visible: PadState.searchQuery !== ""
@@ -247,12 +247,12 @@ ColumnLayout {
             // A real app/window icon when one resolves; a generic glyph
             // (never blank) for pad shortcuts or when lookup fails.
             iconSource: row.modelData.iconPath
-            glyph: row.modelData.kind === "app" ? "\u{F0614}"
-                : row.modelData.kind === "window" ? "\u{F05B4}"
-                : row.modelData.kind === "session" ? row.modelData.glyph
-                : row.modelData.kind === "calc" ? "\u{F00EC}"
-                : row.modelData.kind === "run" ? "\u{F018D}"
-                : "\u{F0493}"
+            icon: row.modelData.kind === "app" ? "app-window"
+                : row.modelData.kind === "window" ? "panels-top-left"
+                : row.modelData.kind === "session" ? row.modelData.icon
+                : row.modelData.kind === "calc" ? "calculator"
+                : row.modelData.kind === "run" ? "terminal"
+                : "settings"
             glyphColor: Colors.alpha(Colors.text, 0.6)
             // Armed session rows become the confirmation prompt, in the
             // same destructive red as ListRow's action preview.
