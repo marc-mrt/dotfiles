@@ -37,7 +37,7 @@ ColumnLayout {
             delegate: W.ListRow {
                 id: row
                 required property string modelData
-                glyph: "\u{F0192}"
+                icon: "clipboard"
                 glyphColor: Colors.alpha(Colors.text, 0.6)
                 // cliphist lines are "<id>\t<preview>"; decode wants the
                 // whole line back.

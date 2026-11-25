@@ -98,15 +98,15 @@ ColumnLayout {
             spacing: 8
 
             W.IconButton {
-                glyph: "\u{F04AE}"
+                icon: "skip-back"
                 onClicked: root.player.previous()
             }
             W.IconButton {
-                glyph: root.player && root.player.isPlaying ? "\u{F03E4}" : "\u{F040A}"
+                icon: root.player && root.player.isPlaying ? "pause" : "play"
                 onClicked: root.player.togglePlaying()
             }
             W.IconButton {
-                glyph: "\u{F04AD}"
+                icon: "skip-forward"
                 onClicked: root.player.next()
             }
         }
