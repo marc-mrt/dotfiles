@@ -64,7 +64,7 @@ ColumnLayout {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "\u{F8CC}"
+                    text: "\u{F037D}"
                     color: Colors.text
                     font.pixelSize: Metrics.iconButtonGlyphSize
                 }
