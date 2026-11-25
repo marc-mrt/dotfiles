@@ -51,6 +51,7 @@ ColumnLayout {
         W.IconButton {
             visible: Bluetooth.powered && pages.current === 1
             icon: "refresh-cw"
+            glyphSize: Metrics.fontBody
             onClicked: Bluetooth.toggleScan()
         }
         W.Toggle {

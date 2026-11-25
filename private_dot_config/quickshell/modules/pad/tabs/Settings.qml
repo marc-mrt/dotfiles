@@ -65,7 +65,7 @@ ColumnLayout {
                 W.Icon {
                     anchors.centerIn: parent
                     name: "mouse"
-                    size: Metrics.iconButtonGlyphSize
+                    size: Metrics.fontBody
                 }
             }
         }

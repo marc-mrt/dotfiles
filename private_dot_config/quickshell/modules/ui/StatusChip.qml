@@ -24,6 +24,12 @@ Item {
     // text (see Icon.qml beside this file).
     property string icon: ""
     property int iconSize: Metrics.fontBody
+    // A second vendored Lucide name drawn behind `icon` in the same slot,
+    // at the same size and alignment — a dim full-strength shape that gives
+    // a levelled glyph its context (the wifi signal levels read as cutouts
+    // of one full wifi). Empty draws nothing.
+    property string iconBack: ""
+    property color iconBackColor: Colors.alpha(Colors.text, 0.25)
     property bool active: false
     // A toggle that is off but keeps its ink: dims the chip, no pill.
     property bool dimmed: false
@@ -63,17 +69,31 @@ Item {
         anchors.centerIn: parent
         spacing: 6
 
+        // Row top-aligns its children, so a glyph beside a taller text
+        // line box reads low; centring both keeps the flow horizontal.
         Icon {
             visible: root.icon !== ""
+            anchors.verticalCenter: parent.verticalCenter
             name: root.icon
             color: root.inkColor
             size: root.iconSize
             Behavior on color { ColorAnimation { duration: Metrics.durationFast } }
+
+            // z: -1 puts it behind this Icon's own MultiEffect, so the
+            // main glyph's strokes land on top of the dim shape.
+            Icon {
+                visible: root.iconBack !== ""
+                z: -1
+                name: root.iconBack
+                color: root.iconBackColor
+                size: root.iconSize
+            }
         }
 
         Text {
             id: label
             visible: root.text !== ""
+            anchors.verticalCenter: parent.verticalCenter
             text: root.text
             color: root.inkColor
             Behavior on color { ColorAnimation { duration: Metrics.durationFast } }
