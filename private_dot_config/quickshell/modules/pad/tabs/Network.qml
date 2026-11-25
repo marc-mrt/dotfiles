@@ -58,9 +58,9 @@ ColumnLayout {
                     spacing: 0
 
                     W.ListRow {
-                        glyph: entry.modelData.signal >= 70 ? "\u{F0928}"
-                            : entry.modelData.signal >= 45 ? "\u{F0925}"
-                            : entry.modelData.signal >= 20 ? "\u{F0922}" : "\u{F092F}"
+                        icon: entry.modelData.signal >= 70 ? "wifi"
+                            : entry.modelData.signal >= 45 ? "wifi-high"
+                            : entry.modelData.signal >= 20 ? "wifi-low" : "wifi-zero"
                         glyphColor: entry.modelData.active ? Colors.accent : Colors.text
                         label: entry.modelData.ssid
                         labelColor: entry.modelData.active ? Colors.accent : Colors.text
@@ -82,12 +82,12 @@ ColumnLayout {
                                 Network.connectTo(entry.modelData.ssid, "")
                         }
 
-                        Text {
+                        W.Icon {
                             visible: entry.modelData.secured
                             // lock-check when a saved profile holds the password
-                            text: entry.savedUuid.length > 0 ? "\u{F139A}" : "\u{F033E}"
+                            name: entry.savedUuid.length > 0 ? "lock-keyhole" : "lock"
                             color: Colors.alpha(Colors.text, 0.5)
-                            font.pixelSize: Metrics.fontSecondary
+                            size: Metrics.fontSecondary
                         }
                     }
 
@@ -183,7 +183,7 @@ ColumnLayout {
                     spacing: 0
 
                     W.ListRow {
-                        glyph: "\u{F0928}"
+                        icon: "wifi"
                         glyphColor: saved.modelData.active ? Colors.accent : Colors.text
                         label: saved.modelData.name
                         labelColor: saved.modelData.active ? Colors.accent : Colors.text
@@ -193,13 +193,13 @@ ColumnLayout {
                         // Dimmed rather than hidden at the ends, so the
                         // controls stay in columns down the list.
                         W.IconButton {
-                            glyph: "\u{F0143}"
+                            icon: "chevron-up"
                             enabled: saved.index > 0
                             opacity: enabled ? 1 : 0.3
                             onClicked: Network.move(saved.modelData.uuid, -1)
                         }
                         W.IconButton {
-                            glyph: "\u{F0140}"
+                            icon: "chevron-down"
                             enabled: saved.index < Network.known.length - 1
                             opacity: enabled ? 1 : 0.3
                             onClicked: Network.move(saved.modelData.uuid, 1)
@@ -210,7 +210,7 @@ ColumnLayout {
                         }
                         W.IconButton {
                             readonly property bool open: root.pskRowUuid === saved.modelData.uuid
-                            glyph: open ? "\u{F0209}" : "\u{F0208}"
+                            icon: open ? "eye-off" : "eye"
                             onClicked: {
                                 if (!open)
                                     Network.revealPassword(saved.modelData.uuid)
@@ -218,7 +218,7 @@ ColumnLayout {
                             }
                         }
                         W.IconButton {
-                            glyph: "\u{F01B4}"
+                            icon: "trash"
                             glyphColor: Colors.destructive
                             onClicked: Network.forget(saved.modelData.uuid)
                         }

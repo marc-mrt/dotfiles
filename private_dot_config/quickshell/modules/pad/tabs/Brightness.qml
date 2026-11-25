@@ -18,11 +18,11 @@ ColumnLayout {
             onMoved: (f) => Brightness.setBrightness(f * 100)
             readout: Brightness.brightness + "%"
 
-            Text {
+            W.Icon {
                 anchors.centerIn: parent
-                text: "\u{2600}"
+                name: "sun"
+                size: Metrics.iconButtonGlyphSize
                 color: Colors.text
-                font.pixelSize: Metrics.iconButtonGlyphSize
             }
         }
     }
