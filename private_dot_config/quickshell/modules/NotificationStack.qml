@@ -469,10 +469,10 @@ ColumnLayout {
             id: hintRow
             anchors.centerIn: parent
             spacing: 6
-            Text {
-                text: Notifications.dnd ? "\u{F009B}" : "\u{F009A}"
+            W.Icon {
+                name: Notifications.dnd ? "bell-off" : "bell"
+                size: Metrics.fontSmall
                 color: Colors.text
-                font.pixelSize: Metrics.fontSmall
             }
             Text {
                 text: root.waiting

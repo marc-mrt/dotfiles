@@ -69,10 +69,10 @@ Item {
                 Layout.fillWidth: true
                 Layout.margins: 6
                 spacing: 8
-                Text {
-                    text: "\u{F0231}"
+                W.Icon {
+                    name: "film"
+                    size: Metrics.iconButtonGlyphSize
                     color: Colors.text
-                    font.pixelSize: Metrics.iconButtonGlyphSize
                 }
                 Text {
                     Layout.fillWidth: true
