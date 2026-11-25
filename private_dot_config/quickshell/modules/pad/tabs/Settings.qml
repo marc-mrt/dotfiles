@@ -26,15 +26,15 @@ ColumnLayout {
             // is the one place they can be switched from when off.
             Repeater {
                 model: [
-                    { glyph: "\u{F00AF}", label: "Bluetooth" },
-                    { glyph: "\u{EF59}", label: "Caffeine" },
-                    { glyph: "\u{F009B}", label: "Do Not Disturb" }
+                    { icon: "bluetooth", label: "Bluetooth" },
+                    { icon: "coffee", label: "Caffeine" },
+                    { icon: "bell-off", label: "Do Not Disturb" }
                 ]
                 delegate: W.ListRow {
                     id: row
                     required property var modelData
                     required property int index
-                    glyph: row.modelData.glyph
+                    icon: row.modelData.icon
                     label: row.modelData.label
                     onClicked: tog.toggled()
 
@@ -62,11 +62,10 @@ ColumnLayout {
                 onMoved: (f) => Mouse.setSensitivity(f * 2 - 1)
                 readout: Mouse.sensitivity.toFixed(2)
 
-                Text {
+                W.Icon {
                     anchors.centerIn: parent
-                    text: "\u{F8CC}"
-                    color: Colors.text
-                    font.pixelSize: Metrics.iconButtonGlyphSize
+                    name: "mouse"
+                    size: Metrics.iconButtonGlyphSize
                 }
             }
         }
