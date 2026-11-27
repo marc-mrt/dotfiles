@@ -22,7 +22,6 @@
     { "action": "shell", "resource": "gh pr ready *", "effect": "ask" },
     { "action": "shell", "resource": "gh pr comment *", "effect": "ask" },
     { "action": "shell", "resource": "gh pr review *", "effect": "ask" },
-    { "action": "shell", "resource": "gh issue comment *", "effect": "ask" },
     { "action": "shell", "resource": "git push --force*", "effect": "ask" },
     { "action": "shell", "resource": "git push -f *", "effect": "ask" }
   ]
